@@ -1,13 +1,13 @@
-mutable struct foo
-    A
-end
-
 
 mutable struct Signal
     data
     action::Function
-    children::Vector{WeakRef}
-    Signal(data,f::Function) = new(data,f,WeakRef[])
+    children::Vector{Signal}
+    Signal(data,f::Function) = begin
+        s = new(data,f,Signal[])
+        # finalizer(s,(s) -> @async println("finialized Signal"))
+        # s
+    end
 end
 
 function value(s::Signal)
@@ -16,14 +16,9 @@ end
 function value(s::T) where T
     s
 end
-function action(s::Signal)
-    s.action
-end
-function _call(f::Function)
-    f()
-end
+
 function call_on_value(f::Function,args::Tuple)
-    f(map(value,args)...)
+
 end
 function set_value!(s::Signal,d)
      s.data = d
@@ -34,31 +29,24 @@ function update!(s::Signal)
     foreach(update!,s.children)
 end
 
-function update!(wrs::WeakRef)
-    if wrs.value != nothing
-        s = wrs.value
-        update!(s)
-    end
-end
-
 (s::Signal)(val)  = begin
     s.data = val
     foreach(update!,s.children)
 end
 
+
 Signal(val) = Signal(val,() -> nothing)
 Signal(f::Function,arg1,arg2...) = begin
     args = (arg1,arg2...)
-    g = () -> call_on_value(f,args)
+    g = () -> f(map(value,args)...)
     s = Signal(g(),g)
     for arg in args
-        isa(arg,Signal) && push!(arg.children,WeakRef(s))
+        isa(arg,Signal) && push!(arg.children,s)
     end
     s
 end
 
 A = Signal(@SMatrix rand(4,4))
-
 B = Signal(@SMatrix rand(4,4))
 
 C = Signal(@SMatrix rand(4,4))
@@ -70,7 +58,7 @@ end
 F = Signal(C,D) do a,b
     a*b
 end
-Signal(E,F) do e,f
-    print(e*f)
+G = Signal(E,F) do e,f
+    e*f
 end
-Z = @SMatrix zeros(4,4)
+Z = 0
