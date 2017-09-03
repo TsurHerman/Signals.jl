@@ -65,12 +65,12 @@ Signal(val) = begin
 end
 
 Signal(f::Function,args...) = begin
-    action = create_action(f,args,value)
+    g = () -> f(map(value,args)...)
     poll_action = () -> begin
         foreach(poll!,args);
         action()
     end
-    s = Signal(action(),action,poll_action)
+    s = Signal(g(),g,poll_action)
     for arg in args
         isa(arg,Signal) && push!(arg.children,s)
     end
