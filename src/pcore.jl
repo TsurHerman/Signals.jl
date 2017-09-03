@@ -5,7 +5,7 @@ mutable struct Signal
     poll_action::Function
     children::Vector{Signal}
 
-    data_age::UInt64
+    data_age::Int
 end
 
 create_action(f::Function,args::Tuple,trans::Function = x->x) = begin
@@ -24,6 +24,7 @@ function value(s::T) where T
     s
 end
 
+
 function set_value!(s::Signal,val)
     s.data_age += 1
     s.data = val
@@ -34,7 +35,7 @@ function update!(s::Signal)
     foreach(update!,s.children)
 end
 
-function poll!(s::Signal,force::Bool = false)
+function poll!(s::Signal)
     s.data = s.poll_action()
 end
 
@@ -49,7 +50,7 @@ end
 
 #base_construc
 Signal(data,action::Function,poll_action::Function) = begin
-    s = Signal(data,action,poll_action,Signal[],false)
+    s = Signal(data,action,poll_action,Signal[],0)
     finalizer(s,(s) -> @async println("finialized Signal"))
     s
 end
