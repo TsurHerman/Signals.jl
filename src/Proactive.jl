@@ -1,5 +1,5 @@
 module Proactive
 
-# package code goes here
+include("pcore.jl")
 
 end # module
