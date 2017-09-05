@@ -1,10 +1,10 @@
-using Proactive: Signal,poll!
+using Proactive: Signal,pull!
 using Base.Test
 
 # typ = Matrix
 typ = SMatrix{4,4,Float64,16}
 base_n = 4
-n = 24
+n = 4
 RNG = srand(1234567)
 signals = Signal[Signal(typ(rand(RNG,4,4))) for i=1:base_n]
 for i=1:n
@@ -22,7 +22,7 @@ G = signals[end]
 
 @benchmark $A($Z)
 
-@benchmark pull!(G)
+@benchmark poll!(G)
 
 
 

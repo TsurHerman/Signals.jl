@@ -4,18 +4,21 @@ function nop()
 end
 mutable struct Signal{F,ARGS}
     data
-    f::F
+    act_on::F
     args::ARGS
     children::Vector{Signal}
     data_age::Int
 end
+
+const EmptySignal() = typeof(Signal(nothing))
 
 Signal(val) = begin
     s = Signal(val,nop,(),Signal[],0)
 end
 
 Signal(f::Function,args...) = begin
-    s = Signal(nothing,f,args,Signal[],0)
+    g(trans::Function) = f(map(trans,args)...)
+    s = Signal(g(value),g,args,Signal[],0)
     for arg in args
         isa(arg,Signal) && push!(arg.children,s)
     end
@@ -25,7 +28,7 @@ end
 function value(s::Signal)
     s.data
 end
-value(s) = s
+const value(s) = s
 
 import Base.getindex
 function getindex(s::Signal)
@@ -43,23 +46,37 @@ import Base.push!
 function push!(s::Signal,val)
     set_value!(s,val)
     foreach(push!,s.children)
+    val
 end
 
 function push!(s::Signal)
-    push!(s,action_on_value(s))
-end
-
-function action_on_value(s::Signal)
-    s.f(map(value,s.args)...)
+    push!(s,action(s,value))
+    value(s)
 end
 
 #pull!
+(s::Signal)() = pull!(s)
 function pull!(s::Signal)
-    set_value!(s,action_on_pull(s))
+    pull!(s,action(s,value))
+    value(s)
+    
+    # set_value!(s,action(s,pull!))
+    # value(s)
+end
+
+function pull!(s::Signal,val)
+    set_value!(s,val)
     value(s)
 end
-pull!(s) = s
+const pull!(s) = s
 
-function action_on_pull(s::Signal)
-    s.f(map(pull!,s.args)...)
+
+
+#wizardry
+Base.@pure function action(s::EmptySignal(),::Function)
+    value(s)
+end
+
+function action(s::Signal,trans::Function)
+    s.act_on(trans)
 end
