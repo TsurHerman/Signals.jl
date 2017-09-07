@@ -15,10 +15,10 @@ struct Signal
     children::Vector{Signal}
 end
 
-Signal(f::Function,arg1,arg2) = begin
+Signal(f::Function,args...) = begin
     sd = SignalData()
 
-    invoke_signal() = store!(sd,f(pull!(arg1),pull!(arg2)))
+    invoke_signal() = store!(sd,f(map(pull!,args)...))
 
     s = Signal(sd,invoke_signal,Signal[])
     s()

@@ -2,7 +2,7 @@ using Proactive: Signal
 
 # write your own tests here
 # @test 1
-# typ = Matrix
+typ = Matrix
 typ = SMatrix{4,4,Float64,16}
 
 A = Signal(typ(rand(4,4)))
