@@ -25,8 +25,7 @@ A(Z)
 
 @benchmark A(Z)
 
-pull!(G)
-@benchmark pull!(G)
+@benchmark begin A[A[]];G(); end
 
 
 

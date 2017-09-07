@@ -1,11 +1,7 @@
 
-function nop()
-    nothing
-end
-
-mutable struct Signal{F}
+mutable struct Signal
     data
-    act_on::F
+    act_on::Function
     children::Vector{Signal}
     data_valid::Bool
 end
@@ -18,18 +14,19 @@ Signal(val) = begin
 end
 
 Signal(f::Function,args...) = begin
-    g(trans::Function) = f(map(trans,args)...)
-    s = Signal(g(value),g,Signal[],true)
+    g() = f(map(pull!,args)...)
+    s = Signal(g(),g,Signal[],true)
     for arg in args
         isa(arg,Signal) && push!(arg.children,s)
     end
     s
 end
 
-function value(s::Signal)
-    s.data
-end
+value(s::Signal) = s.data
 value(s) = s
+
+valid(s) = true
+valid(s::Signal) = s.data_valid
 
 import Base.getindex
 function getindex(s::Signal)
@@ -72,7 +69,7 @@ end
 function pull!(s::Signal)
     if !valid(s)
         s.data_valid = true
-        s.data = action(s,pull!)
+        s.data = s.act_on()
     end
     return value(s)
 end
@@ -80,9 +77,3 @@ pull!(s) = s
 
 
 #wizardry
-valid(s) = true
-valid(s::Signal) = s.data_valid
-
-function action(s::Signal,trans::Function)
-    s.act_on(trans)
-end

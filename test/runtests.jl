@@ -11,7 +11,6 @@ for i=1:n
     A = rand(RNG,signals)
     B = rand(RNG,signals)
     E = Signal(A,B) do a,b
-        global counter
         a*b
     end
     push!(signals,E)
@@ -21,7 +20,7 @@ Z = typ(zeros(4,4))
 A = signals[1]
 G = signals[end]
 
-@benchmark $A($Z)
+@benchmark A(Z)
 
 @benchmark begin A[A[]];G(); end
 
