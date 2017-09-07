@@ -22,7 +22,7 @@ G = signals[end]
 
 @benchmark A(Z)
 
-@benchmark begin A[A[]];G(); end
+@benchmark begin $A[$A[]];$G(); end
 
 A = Signal(1)
 B = Signal(x->x+1,A)

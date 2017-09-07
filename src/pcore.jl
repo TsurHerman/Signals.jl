@@ -1,32 +1,44 @@
+mutable struct SignalData
+    x
+    valid::Bool
+    SignalData(x) = new(x,true)
+    SignalData() = new(nothing,false)
+end
+import Base.convert
+convert(::T,x) where T = SignalData(x)
+invalidate!(sd::SignalData) = sd.valid = false
+store!(sd::SignalData,val) = begin sd.x = val;sd.valid = true;val;end
 
-mutable struct Signal
-    data
-    act_on::Function
+struct Signal
+    data::SignalData
+    invoke_signal::Function
     children::Vector{Signal}
-    data_valid::Bool
 end
 
-const SourceSignal() = typeof(Signal(nothing))
+Signal(f::Function,arg1,arg2) = begin
+    sd = SignalData()
 
-Signal(val) = begin
-    s = Signal(val,() -> val,Signal[],true)
-    s
-end
+    invoke_signal() = store!(sd,f(pull!(arg1),pull!(arg2)))
 
-Signal(f::Function,args...) = begin
-    g() = f(map(pull!,args)...)
-    s = Signal(g(),g,Signal[],true)
+    s = Signal(sd,invoke_signal,Signal[])
+    s()
+
     for arg in args
         isa(arg,Signal) && push!(arg.children,s)
     end
     s
 end
 
-value(s::Signal) = s.data
+Signal(val) = begin
+    Signal(()->val)
+end
+
+value(s::Signal) = s.data.x
 value(s) = s
 
 valid(s) = true
-valid(s::Signal) = s.data_valid
+valid(s::Signal) = valid(s.data)
+valid(sd::SignalData) = sd.valid
 
 import Base.getindex
 function getindex(s::Signal)
@@ -39,14 +51,16 @@ function getindex(s::Signal,val)
 end
 
 function set_value!(s::Signal,val)
-    s.data_valid = true
-    foreach(invalidate!,s.children)
-    s.data = val
+    invalidate!(s)
+    store!(s,val)
 end
+store!(s::Signal,val) = store!(s.data,val)
 
 function invalidate!(s::Signal)
-    s.data_valid = false
-    foreach(invalidate!,s.children)
+    if valid(s)
+        invalidate!(s.data)
+        foreach(invalidate!,s.children)
+    end
 end
 
 #push!
@@ -59,8 +73,12 @@ function push!(s::Signal,val)
 end
 
 function propogate!(s::Signal)
-    foreach(pull!,s.children)
-    foreach(propogate!,s.children)
+    foreach(s.children) do child
+        if !valid(child)
+            pull!(child)
+            propogate!(child)
+        end
+    end
 end
 
 #pull!
@@ -68,12 +86,13 @@ end
 
 function pull!(s::Signal)
     if !valid(s)
-        s.data_valid = true
-        s.data = s.act_on()
+        invoke_signal(s)
     end
     return value(s)
 end
 pull!(s) = s
 
+invoke_signal(s::Signal) = s.invoke_signal()
 
-#wizardry
+
+nothing

@@ -23,9 +23,9 @@ end
 Z = typ(zeros(4,4))
 A(Z)
 
-@benchmark A(Z)
+@benchmark $A($Z)
 
-@benchmark begin A[A[]];G(); end
+@benchmark begin $A[$A[]];$G(); end
 
 
 
