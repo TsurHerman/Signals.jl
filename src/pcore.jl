@@ -3,35 +3,29 @@ function nop()
     nothing
 end
 
-const age = Ref(0)
-world_age() = begin global age;age.x;end
-world_age(inc::Int) = begin global age; (age.x += inc);end
-export age
-
 mutable struct Signal{F}
     data
     act_on::F
     children::Vector{Signal}
-    data_world_age::Int
+    data_valid::Bool
 end
 
 const SourceSignal() = typeof(Signal(nothing))
 
 Signal(val) = begin
-    s = Signal(val,nop,Signal[],world_age())
+    s = Signal(val,() -> val,Signal[],true)
     s
 end
 
 Signal(f::Function,args...) = begin
     g(trans::Function) = f(map(trans,args)...)
-    s = Signal(g(value),g,Signal[],world_age())
+    s = Signal(g(value),g,Signal[],true)
     for arg in args
         isa(arg,Signal) && push!(arg.children,s)
     end
     s
 end
 
-world_age(s::Signal) = s.data_world_age
 function value(s::Signal)
     s.data
 end
@@ -48,8 +42,14 @@ function getindex(s::Signal,val)
 end
 
 function set_value!(s::Signal,val)
-    s.data_world_age = world_age(1)
+    s.data_valid = true
+    foreach(invalidate!,s.children)
     s.data = val
+end
+
+function invalidate!(s::Signal)
+    s.data_valid = false
+    foreach(invalidate!,s.children)
 end
 
 #push!
@@ -57,47 +57,31 @@ end
 import Base.push!
 function push!(s::Signal,val)
     set_value!(s,val)
-    foreach(pull!,s.children)
-    foreach(push!,s.children)
+    propogate!(s)
     val
 end
 
-function push!(s::Signal)
-    s.data_world_age = world_age()
-    foreach(s.children) do child
-        if child.data_world_age < world_age()
-            pull!(child)
-        end
-    end
-    value(s)
+function propogate!(s::Signal)
+    foreach(pull!,s.children)
+    foreach(propogate!,s.children)
 end
 
 #pull!
 (s::Signal)() = pull!(s)
 
 function pull!(s::Signal)
-    if s.data_world_age == world_age()
-        return s.data
+    if !valid(s)
+        s.data_valid = true
+        s.data = action(s,pull!)
     end
-    foreach(pull!,s.act_on.args)
-    s.data_world_age = world_age()
-    return s.data = action(s,value)
+    return value(s)
 end
 pull!(s) = s
 
 
 #wizardry
-function pull!(s::SourceSignal())
-    if s.data_world_age == world_age()
-        return s.data
-    end
-    s.data_world_age = world_age()
-    return s.data = action(s,value)
-end
-
-function action(s::SourceSignal(),::Function)
-    value(s)
-end
+valid(s) = true
+valid(s::Signal) = s.data_valid
 
 function action(s::Signal,trans::Function)
     s.act_on(trans)
