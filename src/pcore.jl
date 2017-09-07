@@ -15,10 +15,24 @@ struct Signal
     children::Vector{Signal}
 end
 
+@generated function gen(f::Function,args...)
+    exp = Vector{Expr}(length(args))
+    ref_arg(i) = Expr(:ref,:args,i)
+    for (i,arg) in  enumerate(args)
+        if arg == Signal
+            exp[i] = Expr(:call,:pull!,ref_arg(i))
+        else
+            exp[i] = ref_arg(i)
+        end
+    end
+    return Expr(:call,:f,exp...)
+end
+export gen
+
 Signal(f::Function,args...) = begin
     sd = SignalData()
 
-    invoke_signal() = store!(sd,f(map(pull!,args)...))
+    invoke_signal() = store!(sd,gen(f,args...))
 
     s = Signal(sd,invoke_signal,Signal[])
     s()
@@ -93,6 +107,6 @@ end
 pull!(s) = s
 
 invoke_signal(s::Signal) = s.invoke_signal()
-
-
 nothing
+
+#wizardry
