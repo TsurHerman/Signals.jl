@@ -4,14 +4,14 @@ using Base.Test
 # typ = Matrix
 typ = SMatrix{4,4,Float64,16}
 base_n = 2
-n = 28
+n = 5000
 RNG = srand(1234567)
 signals = Signal[Signal(typ(rand(RNG,4,4))) for i=1:base_n]
 for i=1:n
     A = rand(RNG,signals)
     B = rand(RNG,signals)
     E = Signal(A,B) do a,b
-        a*b
+        nothing
     end
     push!(signals,E)
 end
@@ -22,7 +22,7 @@ G = signals[end]
 
 @benchmark A(Z)
 
-@benchmark begin $A[$A[]];$G(); end
+@benchmark begin A[] = A[];G(); end
 
 A = Signal(1)
 B = Signal(x->x+1,A)
@@ -39,7 +39,7 @@ Reactive.async_mode.x = false
 
 typ = SMatrix{4,4,Float64,16}
 base_n = 2
-n = 28
+n = 5000
 RNG = srand(1234567)
 signals = Signal[Signal(typ(rand(RNG,4,4))) for i=1:base_n]
 counter = 0
@@ -47,9 +47,7 @@ for i=1:n
     A = rand(RNG,signals)
     B = rand(RNG,signals)
     E = map(A,B) do a,b
-        global counter
-        counter = counter + 1
-        a*b
+        nothing
     end
     push!(signals,E)
 end

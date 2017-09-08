@@ -15,24 +15,22 @@ struct Signal
     children::Vector{Signal}
 end
 
-@generated function gen(f::Function,args...)
+@generated function call_on_pull!(f::Function,args...)
     exp = Vector{Expr}(length(args))
-    ref_arg(i) = Expr(:ref,:args,i)
     for (i,arg) in  enumerate(args)
         if arg == Signal
-            exp[i] = Expr(:call,:pull!,ref_arg(i))
+            exp[i] = :(pull!(args[$i]))
         else
-            exp[i] = ref_arg(i)
+            exp[i] = :(args[$i])
         end
     end
     return Expr(:call,:f,exp...)
 end
-export gen
 
 Signal(f::Function,args...) = begin
     sd = SignalData()
 
-    invoke_signal() = store!(sd,gen(f,args...))
+    invoke_signal() = store!(sd,call_on_pull!(f,args...))
 
     s = Signal(sd,invoke_signal,Signal[])
     s()
@@ -59,8 +57,8 @@ function getindex(s::Signal)
     value(s)
 end
 
-import Base.getindex
-function getindex(s::Signal,val)
+import Base.setindex!
+function setindex!(s::Signal,val)
     set_value!(s,val)
 end
 
