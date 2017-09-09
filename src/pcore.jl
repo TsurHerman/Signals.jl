@@ -87,8 +87,11 @@ end
 function propogate!(s::Signal)
     foreach(s.children) do child
         if !valid(child)
-            pull!(child)
-            propogate!(child)
+            if isempty(child.children)
+                pull!(child)
+            else
+                propogate!(child)
+            end
         end
     end
 end
