@@ -11,13 +11,14 @@ store!(sd::SignalData,val) = begin sd.x = val;sd.valid = true;val;end
 
 struct Signal
     data::SignalData
-    invoke_signal::Function
+    update_signal::Function
+    value::Function
     children::Vector{Signal}
 end
 
-@generated function call_on_pull!(f::Function,args...)
-    exp = Vector{Expr}(length(args))
-    for (i,arg) in  enumerate(args)
+@generated function call_on_pull!(f::Function,args::Tuple)
+    exp = Vector{Expr}(length(args.parameters))
+    for (i,arg) in  enumerate(args.parameters)
         if arg == Signal
             exp[i] = :(pull!(args[$i]))
         else
@@ -29,10 +30,12 @@ end
 
 Signal(f::Function,args...) = begin
     sd = SignalData()
+    @inline function val()
+        sd.x;
+    end
+    update_signal() = store!(sd,call_on_pull!(f,args))
 
-    invoke_signal() = store!(sd,call_on_pull!(f,args...))
-
-    s = Signal(sd,invoke_signal,Signal[])
+    s = Signal(sd,update_signal,val,Signal[])
     s()
 
     for arg in args
@@ -45,7 +48,8 @@ Signal(val) = begin
     Signal(()->val)
 end
 
-value(s::Signal) = s.data.x
+@inline value(s::Signal) = value(s.data)
+@inline value(sd::SignalData) = sd.x
 value(s) = s
 
 valid(s) = true
@@ -88,7 +92,7 @@ function propogate!(s::Signal)
     foreach(s.children) do child
         if !valid(child)
             if isempty(child.children)
-                pull!(child)
+                enqueue!(pull_queue,child)
             else
                 propogate!(child)
             end
@@ -101,13 +105,13 @@ end
 
 function pull!(s::Signal)
     if !valid(s)
-        invoke_signal(s)
+        update_signal(s)
     end
     return value(s)
 end
 pull!(s) = s
 
-invoke_signal(s::Signal) = s.invoke_signal()
+update_signal(s::Signal) = s.update_signal()
 nothing
 
 #wizardry

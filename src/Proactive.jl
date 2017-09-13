@@ -1,5 +1,8 @@
 module Proactive
 
-include("pcore.jl")
+export Signal
+
+include("core.jl")
+include("eventloop.jl")
 
 end # module
