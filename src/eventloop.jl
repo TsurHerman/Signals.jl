@@ -3,6 +3,7 @@ using DataStructures
 world_age() = ccall(:jl_get_world_counter,Int,())
 const global pull_queue = Queue(Signal)
 const global push_queue = Queue(Signal)
+const global eventloop_cond = Condition()
 
 function empty_queues()
     empty!(pull_queue.store)
@@ -42,7 +43,7 @@ function eventloop(eventloop_world_age = world_age())
             end
             process_pulls()
         end
-        sleep(0.001)
+        wait(eventloop_cond)
     end catch e
         empty_queues()
         @schedule eventloop()

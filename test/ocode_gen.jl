@@ -1,4 +1,4 @@
-using Proactive
+using Proactive: Signal,store!
 
 A = Signal(1)
 B = Signal(x->x+1,A)
@@ -12,9 +12,9 @@ f(s::Signal) = s.update_signal.f
 f(f::Function) = f.f
 data(A) = A.data
 
-store(s::Signal) = x -> store(data(s),x)
-store(s::Signal,val) = s.data.x = val
-store(sd::Proactive.SignalData,val) = sd.x = val
+fn = f(A)
 
 
-@code_native Proactive.store!(A,10)
+
+
+@code_native fn()

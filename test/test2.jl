@@ -28,39 +28,39 @@ A(Z)
 @benchmark begin A[] = A[]; G() end
 
 
+using Proactive: SignalData
+sd = SignalData(5)
 
-using Reactive
-Reactive.async_mode.x = false
+fn(f,args...;self = SignalData) = f(args...,self)
 
-typ = Matrix
-
-A = Signal(typ(rand(4,4)))
-B = Signal(typ(rand(4,4)))
-
-C = Signal(typ(rand(4,4)))
-D = Signal(typ(rand(4,4)))
-
-E = map(A,B) do a,b
-    a*b
+fn(1,2;self = 5) do a,b,self
+    a+b+self
 end
-F = map(C,D) do a,b
-    a*b
-end
-G = map(E,F) do e,f
-    e*f
-end
-Z = typ(zeros(4,4))
-push!(A,Z)
-
-@benchmark push!(A,Z)
-
-
-
-
-
-
-
-
-
-
-nothing
+# using Reactive
+# Reactive.async_mode.x = false
+#
+# typ = Matrix
+#
+# A = Signal(typ(rand(4,4)))
+# B = Signal(typ(rand(4,4)))
+#
+# C = Signal(typ(rand(4,4)))
+# D = Signal(typ(rand(4,4)))
+#
+# E = map(A,B) do a,b
+#     a*b
+# end
+# F = map(C,D) do a,b
+#     a*b
+# end
+# G = map(E,F) do e,f
+#     e*f
+# end
+# Z = typ(zeros(4,4))
+# push!(A,Z)
+#
+# @benchmark push!(A,Z)
+#
+#
+#
+# nothing

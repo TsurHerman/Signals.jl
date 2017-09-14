@@ -9,17 +9,22 @@ convert(::T,x) where T = SignalData(x)
 invalidate!(sd::SignalData) = sd.valid = false
 store!(sd::SignalData,val) = begin sd.x = val;sd.valid = true;val;end
 
+
+abstract type SignalTrait end
+abstract type FixedSource <: SignalTrait end
+abstract type PreservePush <: SignalTrait end
+
 struct Signal
     data::SignalData
+    state::SignalData
     update_signal::Function
-    value::Function
     children::Vector{Signal}
 end
 
 @generated function call_on_pull!(f::Function,args::Tuple)
     exp = Vector{Expr}(length(args.parameters))
     for (i,arg) in  enumerate(args.parameters)
-        if arg == Signal
+        if arg <: Signal
             exp[i] = :(pull!(args[$i]))
         else
             exp[i] = :(args[$i])
@@ -28,14 +33,17 @@ end
     return Expr(:call,:f,exp...)
 end
 
-Signal(f::Function,args...) = begin
-    sd = SignalData()
-    @inline function val()
-        sd.x;
+abstract type NoSelf end
+Signal(f::Function,args...;self = NoSelf) = begin
+    self = SignalData(self)
+    if self.x != NoSelf
+        args = (args...,self)
     end
+
+    sd = SignalData()
     update_signal() = store!(sd,call_on_pull!(f,args))
 
-    s = Signal(sd,update_signal,val,Signal[])
+    s = Signal(sd,self,update_signal,Signal[])
     s()
 
     for arg in args
@@ -85,6 +93,7 @@ import Base.push!
 function push!(s::Signal,val)
     set_value!(s,val)
     propogate!(s)
+    notify(eventloop_cond)
     val
 end
 
