@@ -2,7 +2,7 @@
 using DataStructures
 world_age() = ccall(:jl_get_world_counter,Int,())
 const global pull_queue = Queue(Signal)
-const global push_queue = Queue(Signal)
+const global push_queue = Queue(Tuple{Signal,Any})
 const global eventloop_cond = Condition()
 
 function empty_queues()
@@ -28,7 +28,10 @@ end
 #make those pushs aware that they are to be executed in an order blocking way
 function process_pushs()
     if !isempty(push_queue)
-        foreach(push!,push_queue)
+        #Push in a preserving way , async because we are already in the event loop
+        foreach(push_queue) do SV
+            push_preserve!(SV[1],SV[2],true)
+        end
         process_pulls()
     end
 end

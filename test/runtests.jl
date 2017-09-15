@@ -1,10 +1,10 @@
 using Proactive: Signal
 using Base.Test
 
-# typ = Matrix
-typ = SMatrix{4,4,Float64,16}
+typ = Matrix
+# typ = SMatrix{4,4,Float64,16}
 base_n = 2
-n = 5000
+n = 1000
 RNG = srand(1234567)
 signals = Signal[Signal(typ(rand(RNG,4,4))) for i=1:base_n]
 id = 0

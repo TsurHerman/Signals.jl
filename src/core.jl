@@ -9,22 +9,18 @@ convert(::T,x) where T = SignalData(x)
 invalidate!(sd::SignalData) = sd.valid = false
 store!(sd::SignalData,val) = begin sd.x = val;sd.valid = true;val;end
 
-
-abstract type SignalTrait end
-abstract type FixedSource <: SignalTrait end
-abstract type PreservePush <: SignalTrait end
-
 struct Signal
     data::SignalData
-    state::SignalData
     update_signal::Function
     children::Vector{Signal}
+    preserve_push::Bool
+    state::SignalData
 end
 
-@generated function call_on_pull!(f::Function,args::Tuple)
-    exp = Vector{Expr}(length(args.parameters))
-    for (i,arg) in  enumerate(args.parameters)
-        if arg <: Signal
+@generated function call_on_pull!(f::Function,args...)
+    exp = Vector{Expr}(length(args))
+    for (i,arg) in  enumerate(args)
+        if arg == Signal
             exp[i] = :(pull!(args[$i]))
         else
             exp[i] = :(args[$i])
@@ -34,16 +30,23 @@ end
 end
 
 abstract type NoSelf end
-Signal(f::Function,args...;self = NoSelf) = begin
-    self = SignalData(self)
-    if self.x != NoSelf
-        args = (args...,self)
+Signal(f::Function,args...;self = NoSelf , preserve_push = false) = begin
+    state = SignalData(nothing)
+    if self != NoSelf
+        _state = SignalData(self)
+        _args = (args...,_state)
+    else
+        _state = state
+        _args = args
     end
+    Signal(preserve_push,_state,f,_args...)
+end
 
+Signal(preserve_push::Bool,state::SignalData,f::Function,args...) = begin
     sd = SignalData()
-    update_signal() = store!(sd,call_on_pull!(f,args))
+    update_signal() = store!(sd,call_on_pull!(f,args...))
 
-    s = Signal(sd,self,update_signal,Signal[])
+    s = Signal(sd,update_signal,Signal[],preserve_push,state)
     s()
 
     for arg in args
@@ -52,8 +55,8 @@ Signal(f::Function,args...;self = NoSelf) = begin
     s
 end
 
-Signal(val) = begin
-    Signal(()->val)
+Signal(val;kwargs...) = begin
+    Signal(()->val;kwargs...)
 end
 
 @inline value(s::Signal) = value(s.data)
@@ -86,41 +89,3 @@ function invalidate!(s::Signal)
         foreach(invalidate!,s.children)
     end
 end
-
-#push!
-(s::Signal)(val) = push!(s,val)
-import Base.push!
-function push!(s::Signal,val)
-    set_value!(s,val)
-    propogate!(s)
-    notify(eventloop_cond)
-    val
-end
-
-function propogate!(s::Signal)
-    foreach(s.children) do child
-        if !valid(child)
-            if isempty(child.children)
-                enqueue!(pull_queue,child)
-            else
-                propogate!(child)
-            end
-        end
-    end
-end
-
-#pull!
-(s::Signal)() = pull!(s)
-
-function pull!(s::Signal)
-    if !valid(s)
-        update_signal(s)
-    end
-    return value(s)
-end
-pull!(s) = s
-
-update_signal(s::Signal) = s.update_signal()
-nothing
-
-#wizardry

@@ -11,7 +11,8 @@ B = Signal(typ(rand(4,4)))
 C = Signal(typ(rand(4,4)))
 D = Signal(typ(rand(4,4)))
 
-E = Signal(A,B) do a,b
+E = Signal(A,B;self = 0) do a,b,self
+    self.x += 1;
     a*b
 end
 F = Signal(C,D) do a,b
