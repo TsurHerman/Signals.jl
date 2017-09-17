@@ -51,15 +51,14 @@ end
 #pull!
 (s::Signal)() = pull!(s)
 
-function pull!(s::Signal)
+@inline function pull!(s::Signal)
     if !valid(s)
         update_signal(s)
     end
     return value(s)
 end
-pull!(s) = s
 
-update_signal(s::Signal) = s.update_signal()
+@inline update_signal(s::Signal) = s.update_signal()
 nothing
 
 #wizardry

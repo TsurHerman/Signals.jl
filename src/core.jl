@@ -18,11 +18,9 @@ end
 
 @inline value(s::Signal) = value(s.data)
 @inline value(sd::SignalData) = sd.x
-@inline value(s) = s
 
 @inline state(s::Signal) = value(s.state)
 
-@inline valid(s) = true
 @inline valid(s::Signal) = valid(s.data)
 @inline valid(sd::SignalData) = sd.valid
 
@@ -42,7 +40,12 @@ end
 
 Signal(preserve_push::Bool,state::SignalData,f::Function,args...) = begin
     sd = SignalData()
-    update_signal() = store!(sd,call_on_pull!(f,args...))
+    update_signal() = begin
+        _args = map(args) do arg
+            typeof(arg) != Signal ? arg : pull!(arg)
+        end
+        store!(sd,f(_args...))
+    end
 
     s = Signal(sd,update_signal,Signal[],preserve_push,state)
     s()
@@ -53,17 +56,6 @@ Signal(preserve_push::Bool,state::SignalData,f::Function,args...) = begin
     s
 end
 
-@generated function call_on_pull!(f::Function,args...)
-    exp = Vector{Expr}(length(args))
-    for (i,arg) in  enumerate(args)
-        if arg == Signal
-            exp[i] = :(pull!(args[$i]))
-        else
-            exp[i] = :(args[$i])
-        end
-    end
-    return Expr(:call,:f,exp...)
-end
 
 import Base.getindex
 function getindex(s::Signal)
