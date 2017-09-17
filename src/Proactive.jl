@@ -1,6 +1,6 @@
 module Proactive
 
-export Signal
+export Signal,state
 
 include("core.jl")
 include("push.jl")

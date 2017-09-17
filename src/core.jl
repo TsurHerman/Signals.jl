@@ -4,10 +4,6 @@ mutable struct SignalData
     SignalData(x) = new(x,true)
     SignalData() = new(nothing,false)
 end
-import Base.convert
-convert(::T,x) where T = SignalData(x)
-invalidate!(sd::SignalData) = sd.valid = false
-store!(sd::SignalData,val) = begin sd.x = val;sd.valid = true;val;end
 
 struct Signal
     data::SignalData
@@ -17,29 +13,31 @@ struct Signal
     state::SignalData
 end
 
-@generated function call_on_pull!(f::Function,args...)
-    exp = Vector{Expr}(length(args))
-    for (i,arg) in  enumerate(args)
-        if arg == Signal
-            exp[i] = :(pull!(args[$i]))
-        else
-            exp[i] = :(args[$i])
-        end
-    end
-    return Expr(:call,:f,exp...)
+@inline store!(sd::SignalData,val) = begin sd.x = val;sd.valid = true;val;end
+@inline store!(s::Signal,val) = store!(s.data,val)
+
+@inline value(s::Signal) = value(s.data)
+@inline value(sd::SignalData) = sd.x
+@inline value(s) = s
+
+@inline state(s::Signal) = value(s.state)
+
+@inline valid(s) = true
+@inline valid(s::Signal) = valid(s.data)
+@inline valid(sd::SignalData) = sd.valid
+
+Signal(val;kwargs...) = begin
+    Signal(()->val;kwargs...)
 end
 
-abstract type NoSelf end
-Signal(f::Function,args...;self = NoSelf , preserve_push = false) = begin
-    state = SignalData(nothing)
-    if self != NoSelf
-        _state = SignalData(self)
-        _args = (args...,_state)
-    else
-        _state = state
-        _args = args
+abstract type Stateless end
+Signal(f::Function,args...;state = Stateless , preserve_push = false) = begin
+    _state = SignalData(nothing)
+    if state != Stateless
+        store!(_state,state)
+        args = (args...,_state)
     end
-    Signal(preserve_push,_state,f,_args...)
+    Signal(preserve_push,_state,f,args...)
 end
 
 Signal(preserve_push::Bool,state::SignalData,f::Function,args...) = begin
@@ -55,17 +53,17 @@ Signal(preserve_push::Bool,state::SignalData,f::Function,args...) = begin
     s
 end
 
-Signal(val;kwargs...) = begin
-    Signal(()->val;kwargs...)
+@generated function call_on_pull!(f::Function,args...)
+    exp = Vector{Expr}(length(args))
+    for (i,arg) in  enumerate(args)
+        if arg == Signal
+            exp[i] = :(pull!(args[$i]))
+        else
+            exp[i] = :(args[$i])
+        end
+    end
+    return Expr(:call,:f,exp...)
 end
-
-@inline value(s::Signal) = value(s.data)
-@inline value(sd::SignalData) = sd.x
-value(s) = s
-
-valid(s) = true
-valid(s::Signal) = valid(s.data)
-valid(sd::SignalData) = sd.valid
 
 import Base.getindex
 function getindex(s::Signal)
@@ -81,7 +79,6 @@ function set_value!(s::Signal,val)
     invalidate!(s)
     store!(s,val)
 end
-store!(s::Signal,val) = store!(s.data,val)
 
 function invalidate!(s::Signal)
     if valid(s)
@@ -89,3 +86,5 @@ function invalidate!(s::Signal)
         foreach(invalidate!,s.children)
     end
 end
+
+invalidate!(sd::SignalData) = sd.valid = false
