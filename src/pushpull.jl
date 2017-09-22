@@ -8,7 +8,7 @@ async_mode(b::Bool)  = _async_mode.x = b
 (s::Signal)(val) = push!(s,val)
 import Base.push!
 function push!(s::Signal,val , async::Bool = async_mode())
-    if s.preserve_push
+    if s.strict_push
         push_preserve!(s,val,async)
     else
         push_signal!(s,val,async)
@@ -53,7 +53,7 @@ end
 
 @inline function pull!(s::Signal)
     if !valid(s)
-        pull!(s,s.update_signal)
+        pull!(s,s.action)
     end
     return value(s)
 end
@@ -76,25 +76,18 @@ end
 pull!(x) = x
 
 validate(s::Signal) = begin
-    validate(s.update_signal)
+    validate(s.action)
 end
 
 
 validate(sa::SignalAction{F,ARGS}) where F where ARGS = begin
-    all_args_valid = unrolled_all(sa.args) do arg
-        isa(arg,Signal) ? valid(arg) : true;
-    end
-    if all_args_valid
+    if valid(sa)
         validate(sa.sd)
     end
 end
 validate(sd::SignalData) = sd.valid = true
 
 
-
-
-
-@inline update_signal(s::Signal) = s.update_signal()
 nothing
 
 #wizardry

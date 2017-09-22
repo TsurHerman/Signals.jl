@@ -8,7 +8,7 @@ E = Signal(x->x+1,D)
 F = Signal(x->x+1,E)
 
 g(val) = () -> val
-f(s::Signal) = s.update_signal.f
+f(s::Signal) = s.action.f
 f(f::Function) = f.f
 data(A) = A.data
 

@@ -11,75 +11,62 @@ struct SignalAction{F <: Function,ARGS <: Tuple} <: Function
     sd::SignalData
 end
 
-using Unrolled
-pull_args(args) = unrolled_map(args) do arg
+pull_args(args) = map(args) do arg
     typeof(arg) != Signal ? arg : pull!(arg)
 end
-value_args(args) = unrolled_map(args) do arg
+value_args(args) = map(args) do arg
     typeof(arg) != Signal ? arg : value(arg)
 end
-valid_args(args) = unrolled_map(args) do arg
+valid_args(args) = all(args) do arg
     typeof(arg) != Signal ? true : valid(arg)
 end
 
-(sa::SignalAction{F,ARGS})(args::ARGS) where F where ARGS = begin
-    _args = pull_args(sa.args)
-    res = sa.f(_args...)
-    store!(sa,res)
-end
-
-(sa::SignalAction{F,ARGS})() where F where ARGS = begin
-    sa(sa.args)
-end
-
-(sa::SignalAction{F,Tuple{}})() where F = begin
-    store!(sa,sa.f())
-end
-store!(sa::SignalAction,x) = store!(sa.sd,x)
 
 struct Signal
     data::SignalData
-    update_signal::Function
+    action::SignalAction
     children::Vector{Signal}
-    preserve_push::Bool
+    strict_push::Bool
     drop_repeats::Bool
-    state::Ref{Any}
+    state::Ref
 end
 
-pull_args(s::Signal) = pull_args(s.update_signal)
+pull_args(s::Signal) = pull_args(s.action)
 pull_args(sa::SignalAction{F,ARGS}) where F where ARGS = pull_args(sa.args)
 
 
 @inline store!(sd::SignalData,val) = begin sd.x = val;sd.valid = true;val;end
 @inline store!(s::Signal,val) = store!(s.data,val)
+@inline store!(sa::SignalAction,x) = store!(sa.sd,x)
+
 
 @inline value(s::Signal) = value(s.data)
 @inline value(sd::SignalData) = sd.x
 
-@inline state(s::Signal) = value(s.state)
+@inline state(s::Signal) = s.state.x
 
 @inline valid(s::Signal) = valid(s.data)
 @inline valid(sd::SignalData) = sd.valid
-@inline valid(sa::SignalAction) = valid(sa.sd)
+@inline valid(sa::SignalAction) = valid_args(sa.args)
 
 Signal(val;kwargs...) = begin
     Signal(()->val;kwargs...)
 end
 
 abstract type Stateless end
-Signal(f::Function,args...;state = Stateless , preserve_push = false) = begin
-    _state = Ref{Any}(state)
+Signal(f::Function,args...;state = Stateless , strict_push = false) = begin
+    _state = Ref(state)
     if state != Stateless
         args = (args...,_state)
     end
-    Signal(preserve_push,_state,f,args...)
+    Signal(strict_push,_state,f,args...)
 end
 
-Signal(preserve_push::Bool,state::Ref{Any},f::Function,args...) = begin
+Signal(strict_push::Bool,state::Ref,f::Function,args...) = begin
     sd = SignalData()
-    update_signal = SignalAction(f,args,sd)
+    action = SignalAction(f,args,sd)
 
-    s = Signal(sd,update_signal,Signal[],preserve_push,true,state)
+    s = Signal(sd,action,Signal[],strict_push,false,state)
     s()
 
     for arg in args
