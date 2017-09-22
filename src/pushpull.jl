@@ -1,3 +1,5 @@
+using Unrolled
+
 const _async_mode = Ref(false)
 async_mode() = _async_mode.x
 async_mode(b::Bool)  = _async_mode.x = b
@@ -38,7 +40,7 @@ end
 
 function push_preserve!(s,val,async)
     if valid(s)
-        push_signal!(a,val,async)
+        push_signal!(s,val,async)
     else
         enqueue!(push_queue,(s,val))
         notify(eventloop_cond)
@@ -61,8 +63,8 @@ pull!(s::Signal,sa::SignalAction) = begin
     if !valid(s)
         old_val = value(s)
         res = sa.f(_args...)
-        validate(s.data)
-        if old_val  == res
+        if s.drop_repeats && old_val  == res
+            validate(s.data)
             foreach(validate,s.children)
         end
     else
@@ -77,8 +79,12 @@ validate(s::Signal) = begin
     validate(s.update_signal)
 end
 
+
 validate(sa::SignalAction{F,ARGS}) where F where ARGS = begin
-    if all(valid_args(sa.args))
+    all_args_valid = unrolled_all(sa.args) do arg
+        isa(arg,Signal) ? valid(arg) : true;
+    end
+    if all_args_valid
         validate(sa.sd)
     end
 end

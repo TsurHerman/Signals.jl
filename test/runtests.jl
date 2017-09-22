@@ -12,9 +12,11 @@ for i=1:n
     A = rand(RNG,signals)
     B = rand(RNG,signals)
     id = id + 1
-    E = Signal(A,B,id) do a,b,id
-        # print("$id->")
-        a+b
+    E = Signal(A,B;state = 0) do a,b,state
+        state.x += 1
+        sleep(0.001)
+        a*b
+
     end
     push!(signals,E)
 end
@@ -50,6 +52,7 @@ for i=1:n
     A = rand(RNG,signals)
     B = rand(RNG,signals)
     E = map(A,B) do a,b
+        sleep(0.001)
         a*b
     end
     push!(signals,E)

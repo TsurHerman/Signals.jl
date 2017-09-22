@@ -42,8 +42,10 @@ struct Signal
     update_signal::Function
     children::Vector{Signal}
     preserve_push::Bool
-    state::SignalData
+    drop_repeats::Bool
+    state::Ref{Any}
 end
+
 pull_args(s::Signal) = pull_args(s.update_signal)
 pull_args(sa::SignalAction{F,ARGS}) where F where ARGS = pull_args(sa.args)
 
@@ -66,19 +68,18 @@ end
 
 abstract type Stateless end
 Signal(f::Function,args...;state = Stateless , preserve_push = false) = begin
-    _state = SignalData(nothing)
+    _state = Ref{Any}(state)
     if state != Stateless
-        store!(_state,state)
         args = (args...,_state)
     end
     Signal(preserve_push,_state,f,args...)
 end
 
-Signal(preserve_push::Bool,state::SignalData,f::Function,args...) = begin
+Signal(preserve_push::Bool,state::Ref{Any},f::Function,args...) = begin
     sd = SignalData()
     update_signal = SignalAction(f,args,sd)
 
-    s = Signal(sd,update_signal,Signal[],preserve_push,state)
+    s = Signal(sd,update_signal,Signal[],preserve_push,true,state)
     s()
 
     for arg in args
