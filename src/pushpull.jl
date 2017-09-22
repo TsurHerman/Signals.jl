@@ -59,15 +59,33 @@ end
 pull!(s::Signal,sa::SignalAction) = begin
     _args = pull_args(sa)
     if !valid(s)
-        drop_repeats = value(s)
+        old_val = value(s)
         res = sa.f(_args...)
+        validate(s.data)
+        if old_val  == res
+            foreach(validate,s.children)
+        end
     else
-        # validate(s)
-        res = value(s)
+        old_val = res = value(s)
+        foreach(validate,s.children)
     end
     store!(sa,res)
 end
 pull!(x) = x
+
+validate(s::Signal) = begin
+    validate(s.update_signal)
+end
+
+validate(sa::SignalAction{F,ARGS}) where F where ARGS = begin
+    if all(valid_args(sa.args))
+        validate(sa.sd)
+    end
+end
+validate(sd::SignalData) = sd.valid = true
+
+
+
 
 
 @inline update_signal(s::Signal) = s.update_signal()

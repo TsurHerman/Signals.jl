@@ -18,7 +18,8 @@ end
 F = Signal(C,D) do a,b
     a*b
 end
-G = Signal(E,F) do e,f
+G = Signal(E,F;state = 0) do e,f,state
+    state.x += 1;
     e*f
 end
 Z = typ(zeros(4,4))

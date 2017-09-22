@@ -18,6 +18,9 @@ end
 value_args(args) = unrolled_map(args) do arg
     typeof(arg) != Signal ? arg : value(arg)
 end
+valid_args(args) = unrolled_map(args) do arg
+    typeof(arg) != Signal ? true : valid(arg)
+end
 
 (sa::SignalAction{F,ARGS})(args::ARGS) where F where ARGS = begin
     _args = pull_args(sa.args)
