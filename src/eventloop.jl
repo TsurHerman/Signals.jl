@@ -30,7 +30,7 @@ function process_pushs()
     if !isempty(push_queue)
         #Push in a preserving way , async because we are already in the event loop
         foreach(push_queue) do SV
-            push_preserve!(SV[1],SV[2],true)
+            strict_push!(SV[1],SV[2],true)
         end
         process_pulls()
     end

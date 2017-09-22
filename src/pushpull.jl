@@ -9,7 +9,7 @@ async_mode(b::Bool)  = _async_mode.x = b
 import Base.push!
 function push!(s::Signal,val , async::Bool = async_mode())
     if s.strict_push
-        push_preserve!(s,val,async)
+        strict_push!(s,val,async)
     else
         push_signal!(s,val,async)
     end
@@ -38,7 +38,7 @@ function propogate!(s,async::Bool = async_mode())
     end
 end
 
-function push_preserve!(s,val,async)
+function strict_push!(s,val,async)
     if valid(s)
         push_signal!(s,val,async)
     else
@@ -80,7 +80,7 @@ validate(s::Signal) = begin
 end
 
 
-validate(sa::SignalAction{F,ARGS}) where F where ARGS = begin
+validate(sa::SignalAction)  = begin
     if valid(sa)
         validate(sa.sd)
     end

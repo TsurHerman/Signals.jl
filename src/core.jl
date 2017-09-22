@@ -5,8 +5,8 @@ mutable struct SignalData
     SignalData() = new(nothing,false)
 end
 
-struct SignalAction{F <: Function,ARGS <: Tuple} <: Function
-    f::F
+struct SignalAction{ARGS} <: Function
+    f::Function
     args::ARGS
     sd::SignalData
 end
@@ -32,7 +32,7 @@ struct Signal
 end
 
 pull_args(s::Signal) = pull_args(s.action)
-pull_args(sa::SignalAction{F,ARGS}) where F where ARGS = pull_args(sa.args)
+pull_args(sa::SignalAction) = pull_args(sa.args)
 
 
 @inline store!(sd::SignalData,val) = begin sd.x = val;sd.valid = true;val;end
@@ -63,11 +63,10 @@ Signal(f::Function,args...;state = Stateless , strict_push = false) = begin
 end
 
 Signal(strict_push::Bool,state::Ref,f::Function,args...) = begin
-    sd = SignalData()
+    sd = SignalData(f(pull_args(args)...))
     action = SignalAction(f,args,sd)
 
     s = Signal(sd,action,Signal[],strict_push,false,state)
-    s()
 
     for arg in args
         isa(arg,Signal) && push!(arg.children,s)
