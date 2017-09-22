@@ -26,7 +26,7 @@ A(Z)
 
 @benchmark $A($Z)
 
-@benchmark begin A[] = A[]; G() end
+@benchmark begin begin $A[] = $A[];end; $G(); end
 
 
 using Proactive: SignalData

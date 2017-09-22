@@ -10,15 +10,28 @@ struct SignalAction{F <: Function,ARGS <: Tuple} <: Function
     args::ARGS
     sd::SignalData
 end
-@generated unrolled_pull_args(args...) = begin
-    
-(sa::SignalAction{F,ARGS})() where F where ARGS = begin
-    _args = map(sa.args) do arg
-        typeof(arg) != Signal ? arg : pull!(arg)
-    end
-    store!(sa,sa.f(_args...))
+
+using Unrolled
+pull_args(args) = unrolled_map(args) do arg
+    typeof(arg) != Signal ? arg : pull!(arg)
+end
+value_args(args) = unrolled_map(args) do arg
+    typeof(arg) != Signal ? arg : value(arg)
 end
 
+(sa::SignalAction{F,ARGS})(args::ARGS) where F where ARGS = begin
+    _args = pull_args(sa.args)
+    res = sa.f(_args...)
+    store!(sa,res)
+end
+
+(sa::SignalAction{F,ARGS})() where F where ARGS = begin
+    sa(sa.args)
+end
+
+(sa::SignalAction{F,Tuple{}})() where F = begin
+    store!(sa,sa.f())
+end
 store!(sa::SignalAction,x) = store!(sa.sd,x)
 
 struct Signal
@@ -28,6 +41,9 @@ struct Signal
     preserve_push::Bool
     state::SignalData
 end
+pull_args(s::Signal) = pull_args(s.update_signal)
+pull_args(sa::SignalAction{F,ARGS}) where F where ARGS = pull_args(sa.args)
+
 
 @inline store!(sd::SignalData,val) = begin sd.x = val;sd.valid = true;val;end
 @inline store!(s::Signal,val) = store!(s.data,val)
@@ -39,6 +55,7 @@ end
 
 @inline valid(s::Signal) = valid(s.data)
 @inline valid(sd::SignalData) = sd.valid
+@inline valid(sa::SignalAction) = valid(sa.sd)
 
 Signal(val;kwargs...) = begin
     Signal(()->val;kwargs...)
@@ -74,7 +91,7 @@ function getindex(s::Signal)
 end
 
 import Base.setindex!
-function setindex!(s::Signal,val)
+@inline function setindex!(s::Signal,val::T) where T
     set_value!(s,val)
 end
 

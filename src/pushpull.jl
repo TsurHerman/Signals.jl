@@ -46,17 +46,26 @@ function push_preserve!(s,val,async)
 end
 
 
-
-
 #pull!
 (s::Signal)() = pull!(s)
 
 @inline function pull!(s::Signal)
     if !valid(s)
-        update_signal(s)
-
+        pull!(s,s.update_signal)
     end
     return value(s)
+end
+
+pull!(s::Signal,sa::SignalAction) = begin
+    _args = pull_args(sa)
+    if !valid(s)
+        drop_repeats = value(s)
+        res = sa.f(_args...)
+    else
+        # validate(s)
+        res = value(s)
+    end
+    store!(sa,res)
 end
 pull!(x) = x
 
