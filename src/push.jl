@@ -37,11 +37,11 @@ function propogate!(s,async::Bool = async_mode())
 end
 
 function push_preserve!(s,val,async)
-    if valis(s)
+    if valid(s)
         push_signal!(a,val,async)
     else
         enqueue!(push_queue,(s,val))
-        norify(eventloop_cond)
+        notify(eventloop_cond)
     end
 end
 
@@ -54,9 +54,12 @@ end
 @inline function pull!(s::Signal)
     if !valid(s)
         update_signal(s)
+
     end
     return value(s)
 end
+pull!(x) = x
+
 
 @inline update_signal(s::Signal) = s.update_signal()
 nothing

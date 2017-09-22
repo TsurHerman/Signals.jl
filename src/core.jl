@@ -5,6 +5,22 @@ mutable struct SignalData
     SignalData() = new(nothing,false)
 end
 
+struct SignalAction{F <: Function,ARGS <: Tuple} <: Function
+    f::F
+    args::ARGS
+    sd::SignalData
+end
+@generated unrolled_pull_args(args...) = begin
+    
+(sa::SignalAction{F,ARGS})() where F where ARGS = begin
+    _args = map(sa.args) do arg
+        typeof(arg) != Signal ? arg : pull!(arg)
+    end
+    store!(sa,sa.f(_args...))
+end
+
+store!(sa::SignalAction,x) = store!(sa.sd,x)
+
 struct Signal
     data::SignalData
     update_signal::Function
@@ -40,12 +56,7 @@ end
 
 Signal(preserve_push::Bool,state::SignalData,f::Function,args...) = begin
     sd = SignalData()
-    update_signal() = begin
-        _args = map(args) do arg
-            typeof(arg) != Signal ? arg : pull!(arg)
-        end
-        store!(sd,f(_args...))
-    end
+    update_signal = SignalAction(f,args,sd)
 
     s = Signal(sd,update_signal,Signal[],preserve_push,state)
     s()
