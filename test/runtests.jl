@@ -35,6 +35,7 @@ C = Signal(x->x+1,B)
 D = Signal(x->x+1,C)
 E = Signal(x->x+1,D)
 F = Signal(x->x+1,E)
+G = Signal(x->x+1,F)
 
 
 
@@ -42,25 +43,13 @@ F = Signal(x->x+1,E)
 using Reactive
 Reactive.async_mode.x = false
 
-typ = Matrix
-base_n = 2
-n = 5000
-RNG = srand(1234567)
-signals = Signal[Signal(typ(rand(RNG,4,4))) for i=1:base_n]
-counter = 0
-for i=1:n
-    A = rand(RNG,signals)
-    B = rand(RNG,signals)
-    E = map(A,B) do a,b
-        sleep(0.001)
-        a*b
-    end
-    push!(signals,E)
-end
-
-Z = typ(zeros(4,4))
-A = signals[1]
-G = signals[end]
+A = Signal(1)
+B = map(x->x+1,A)
+C = map(x->x+1,B)
+D = map(x->x+1,C)
+E = map(x->x+1,D)
+F = map(x->x+1,E)
+G = map(x->x+1,F)
 
 @benchmark push!(A,value(A))
 value(G)

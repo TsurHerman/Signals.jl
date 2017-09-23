@@ -1,5 +1,3 @@
-using Unrolled
-
 const _async_mode = Ref(false)
 async_mode() = _async_mode.x
 async_mode(b::Bool)  = _async_mode.x = b
@@ -8,7 +6,7 @@ async_mode(b::Bool)  = _async_mode.x = b
 (s::Signal)(val) = push!(s,val)
 import Base.push!
 function push!(s::Signal,val , async::Bool = async_mode())
-    if s.strict_push
+    if s.strict_push.x
         strict_push!(s,val,async)
     else
         push_signal!(s,val,async)
@@ -47,7 +45,6 @@ function strict_push!(s,val,async)
     end
 end
 
-
 #pull!
 (s::Signal)() = pull!(s)
 
@@ -63,7 +60,7 @@ pull!(s::Signal,sa::SignalAction) = begin
     if !valid(s)
         old_val = value(s)
         res = sa.f(_args...)
-        if s.drop_repeats && old_val  == res
+        if s.drop_repeats.x && old_val  == res
             validate(s.data)
             foreach(validate,s.children)
         end
@@ -78,7 +75,6 @@ pull!(x) = x
 validate(s::Signal) = begin
     validate(s.action)
 end
-
 
 validate(sa::SignalAction)  = begin
     if valid(sa)

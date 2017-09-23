@@ -26,8 +26,8 @@ struct Signal
     data::SignalData
     action::SignalAction
     children::Vector{Signal}
-    strict_push::Bool
-    drop_repeats::Bool
+    strict_push::Ref{Bool}
+    drop_repeats::Ref{Bool}
     state::Ref
 end
 
@@ -54,19 +54,19 @@ Signal(val;kwargs...) = begin
 end
 
 abstract type Stateless end
-Signal(f::Function,args...;state = Stateless , strict_push = false) = begin
+Signal(f::Function,args...;state = Stateless , strict_push = false , drop_repeats = false) = begin
     _state = Ref(state)
     if state != Stateless
         args = (args...,_state)
     end
-    Signal(strict_push,_state,f,args...)
+    Signal(strict_push,drop_repeats,_state,f,args...)
 end
 
-Signal(strict_push::Bool,state::Ref,f::Function,args...) = begin
+Signal(strict_push::Bool,drop_repeats::Bool,state::Ref,f::Function,args...) = begin
     sd = SignalData(f(pull_args(args)...))
     action = SignalAction(f,args,sd)
 
-    s = Signal(sd,action,Signal[],strict_push,false,state)
+    s = Signal(sd,action,Signal[],strict_push,drop_repeats,state)
 
     for arg in args
         isa(arg,Signal) && push!(arg.children,s)
