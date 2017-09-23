@@ -26,8 +26,8 @@ struct Signal
     data::SignalData
     action::SignalAction
     children::Vector{Signal}
-    strict_push::Ref{Bool}
-    drop_repeats::Ref{Bool}
+    strict_push::Bool
+    drop_repeats::Bool
     state::Ref
 end
 

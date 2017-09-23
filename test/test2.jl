@@ -10,7 +10,7 @@ B = Signal(typ(rand(4,4)))
 C = Signal(typ(rand(4,4)))
 D = Signal(typ(rand(4,4)))
 
-E = Signal(A,B;state = 0,drop_repeats = false) do a,b,state
+E = Signal(A,B;state = 0,drop_repeats = true) do a,b,state
     state.x += 1;
     a*b
 end
