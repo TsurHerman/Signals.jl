@@ -9,11 +9,11 @@ function push!(s::Signal,val , async::Bool = async_mode())
     if s.strict_push
         strict_push!(s,val,async)
     else
-        push_signal!(s,val,async)
+        soft_push!(s,val,async)
     end
 end
 
-function push_signal!(s,val,async::Bool = async_mode())
+function soft_push!(s,val,async::Bool = async_mode())
     set_value!(s,val)
     propogate!(s,async)
     async && notify(eventloop_cond)
@@ -38,7 +38,7 @@ end
 
 function strict_push!(s,val,async)
     if valid(s)
-        push_signal!(s,val,async)
+        soft_push!(s,val,async)
     else
         enqueue!(push_queue,(s,val))
         notify(eventloop_cond)
@@ -60,7 +60,7 @@ pull!(s::Signal,sa::SignalAction) = begin
     if !valid(s)
         old_val = value(s)
         res = sa.f(_args...)
-        if s.drop_repeats && old_val  == res
+        if s.drop_repeats && old_val == res
             validate(s.data)
             foreach(validate,s.children)
         end
