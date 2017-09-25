@@ -1,4 +1,4 @@
-const _async_mode = Ref(false)
+const _async_mode = Ref(true)
 async_mode() = _async_mode.x
 async_mode(b::Bool)  = _async_mode.x = b
 
@@ -6,7 +6,7 @@ async_mode(b::Bool)  = _async_mode.x = b
 (s::Signal)(val) = push!(s,val)
 import Base.push!
 function push!(s::Signal,val , async::Bool = async_mode())
-    if s.strict_push
+    if async && s.strict_push
         strict_push!(s,val,async)
     else
         soft_push!(s,val,async)
@@ -36,7 +36,7 @@ function propogate!(s,async::Bool = async_mode())
     end
 end
 
-function strict_push!(s,val,async)
+function strict_push!(s,val,async = async_mode())
     if valid(s)
         soft_push!(s,val,async)
     else
@@ -44,6 +44,7 @@ function strict_push!(s,val,async)
         notify(eventloop_cond)
     end
 end
+export strict_push!
 
 #pull!
 (s::Signal)() = pull!(s)

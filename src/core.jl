@@ -1,9 +1,9 @@
 mutable struct SignalData
     x
     valid::Bool
-    SignalData(x) = new(x,true)
-    SignalData() = new(nothing,false)
 end
+SignalData(x) = SignalData(x,true)
+SignalData() = SignalData(nothing,false)
 
 struct SignalAction{ARGS} <: Function
     f::Function
