@@ -1,12 +1,9 @@
-const _async_mode = Ref(true)
-async_mode() = _async_mode.x
-async_mode(b::Bool)  = _async_mode.x = b
 
 #push!
 (s::Signal)(val) = push!(s,val)
 import Base.push!
 function push!(s::Signal,val , async::Bool = async_mode())
-    if async && s.strict_push
+    if s.strict_push
         strict_push!(s,val,async)
     else
         soft_push!(s,val,async)
@@ -37,12 +34,13 @@ function propogate!(s,async::Bool = async_mode())
 end
 
 function strict_push!(s,val,async = async_mode())
-    if valid(s)
+    if !async || isempty(pull_queue)
         soft_push!(s,val,async)
     else
         enqueue!(push_queue,(s,val))
         notify(eventloop_cond)
     end
+    val
 end
 export strict_push!
 
@@ -51,6 +49,7 @@ export strict_push!
 
 @inline function pull!(s::Signal)
     if !valid(s)
+        # store!(s,s.action())
         pull!(s,s.action)
     end
     return value(s)
@@ -60,7 +59,7 @@ pull!(s::Signal,sa::SignalAction) = begin
     _args = pull_args(sa)
     if !valid(s)
         old_val = value(s)
-        res = sa.f(_args...)
+        res = sa()
         if s.drop_repeats && old_val == res
             validate(s.data)
             foreach(validate,s.children)
@@ -69,19 +68,16 @@ pull!(s::Signal,sa::SignalAction) = begin
         old_val = res = value(s)
         foreach(validate,s.children)
     end
-    store!(sa,res)
+    store!(s,res)
 end
 pull!(x) = x
 
 validate(s::Signal) = begin
-    validate(s.action)
-end
-
-validate(sa::SignalAction)  = begin
-    if valid(sa)
-        validate(sa.sd)
+    if valid(s.action)
+        validate(s.data)
     end
 end
+
 validate(sd::SignalData) = sd.valid = true
 
 

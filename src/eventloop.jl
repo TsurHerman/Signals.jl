@@ -28,10 +28,12 @@ function process_pulls()
 end
 
 function run_till_now()
-    while !isempty(pull_queue) && !isempty(push_queue)
-        foreach(pull!,get_current_queue(pull_queue))
-        foreach(get_current_queue(push_queue)) do SV
-            strict_push!(SV[1],SV[2])
+    while !isempty(pull_queue)
+        foreach(pull!,pull_queue)
+        empty!(pull_queue.store)
+        if !isempty(push_queue)
+            SV = dequeue!(push_queue)
+            soft_push!(SV[1],SV[2])
         end
     end
 end
@@ -52,7 +54,7 @@ function eventloop(eventloop_world_age = world_age())
     try while true
         if !isempty(pull_queue)
             if world_age() > eventloop_world_age
-                println("restarting Signals eventloop")
+                debug_mode() && println("restarting Signals eventloop")
                 @schedule eventloop()
                 break
             end

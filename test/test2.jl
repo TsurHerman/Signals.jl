@@ -1,4 +1,5 @@
 using Proactive: Signal,state
+Proactive.async_mode(false)
 # write your own tests here
 # @test 1
 typ = Matrix
@@ -10,7 +11,7 @@ B = Signal(typ(rand(4,4)))
 C = Signal(typ(rand(4,4)))
 D = Signal(typ(rand(4,4)))
 
-E = Signal(A,B;state = 0,drop_repeats = false) do a,b,state
+E = Signal(A,B;state = 0) do a,b,state
     state.x += 1;
     a*b
 end
@@ -37,31 +38,12 @@ fn(f,args...;self = SignalData) = f(args...,self)
 fn(1,2;self = 5) do a,b,self
     a+b+self
 end
-# using Reactive
-# Reactive.async_mode.x = false
-#
-# typ = Matrix
-#
-# A = Signal(typ(rand(4,4)))
-# B = Signal(typ(rand(4,4)))
-#
-# C = Signal(typ(rand(4,4)))
-# D = Signal(typ(rand(4,4)))
-#
-# E = map(A,B) do a,b
-#     a*b
-# end
-# F = map(C,D) do a,b
-#     a*b
-# end
-# G = map(E,F) do e,f
-#     e*f
-# end
-# Z = typ(zeros(4,4))
-# push!(A,Z)
-#
-# @benchmark push!(A,Z)
-#
-#
-#
-# nothing
+
+f(x) =begin
+    try
+        error("ff")
+    catch e
+        showerror(STDERR, e, catch_stacktrace())
+        Atom.renderbt(catch_stacktrace())
+    end
+end

@@ -8,7 +8,9 @@ SignalData() = SignalData(nothing,false)
 struct SignalAction{ARGS} <: Function
     f::Function
     args::ARGS
-    sd::SignalData
+end
+(sa::SignalAction)() = begin
+    sa.f(pull_args(sa.args)...)
 end
 
 pull_args(args) = map(args) do arg
@@ -21,7 +23,6 @@ valid_args(args) = all(args) do arg
     typeof(arg) != Signal ? true : valid(arg)
 end
 
-
 struct Signal
     data::SignalData
     action::SignalAction
@@ -31,30 +32,28 @@ struct Signal
     state::Ref
 end
 
-pull_args(s::Signal) = pull_args(s.action)
-pull_args(sa::SignalAction) = pull_args(sa.args)
+ pull_args(s::Signal) = pull_args(s.action)
+ pull_args(sa::SignalAction) = pull_args(sa.args)
 
 
-@inline store!(sd::SignalData,val) = begin sd.x = val;sd.valid = true;val;end
-@inline store!(s::Signal,val) = store!(s.data,val)
-@inline store!(sa::SignalAction,x) = store!(sa.sd,x)
+ store!(sd::SignalData,val) = begin sd.x = val;sd.valid = true;val;end
+ store!(s::Signal,val) = store!(s.data,val)
 
+ value(s::Signal) = value(s.data)
+ value(sd::SignalData) = sd.x
 
-@inline value(s::Signal) = value(s.data)
-@inline value(sd::SignalData) = sd.x
+ state(s::Signal) = s.state.x
 
-@inline state(s::Signal) = s.state.x
-
-@inline valid(s::Signal) = valid(s.data)
-@inline valid(sd::SignalData) = sd.valid
-@inline valid(sa::SignalAction) = valid_args(sa.args)
+ valid(s::Signal) = valid(s.data)
+ valid(sd::SignalData) = sd.valid
+ valid(sa::SignalAction) = valid_args(sa.args)
 
 Signal(val;kwargs...) = begin
     Signal(()->val;kwargs...)
 end
 
 abstract type Stateless end
-Signal(f::Function,args...;state = Stateless , strict_push = false , drop_repeats = false) = begin
+Signal(f::Function,args...;state = Stateless ,strict_push = false ,drop_repeats = false) = begin
     _state = Ref(state)
     if state != Stateless
         args = (args...,_state)
@@ -64,7 +63,7 @@ end
 
 Signal(strict_push::Bool,drop_repeats::Bool,state::Ref,f::Function,args...) = begin
     sd = SignalData(f(pull_args(args)...))
-    action = SignalAction(f,args,sd)
+    action = SignalAction(f,args)
 
     s = Signal(sd,action,Signal[],strict_push,drop_repeats,state)
 
@@ -81,12 +80,12 @@ function getindex(s::Signal)
 end
 
 import Base.setindex!
-@inline function setindex!(s::Signal,val::T) where T
+function setindex!(s::Signal,val)
     set_value!(s,val)
 end
 
 function set_value!(s::Signal,val)
-    invalidate!(s)
+    (s.drop_repeats && (val == value(s))) || invalidate!(s)
     store!(s,val)
 end
 
