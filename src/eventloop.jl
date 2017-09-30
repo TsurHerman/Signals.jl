@@ -9,22 +9,10 @@ function empty_queues()
     empty!(pull_queue.store)
     empty!(push_queue.store)
 end
-function get_current_queue(q::Queue{T}) where T
-    res = [x for x in q]
-    empty!(q.store)
-    res
-end
-
 
 function __init__()
+    global main_thread = current_task()
     @schedule eventloop()
-end
-
-function process_pulls()
-    if !isempty(pull_queue)
-        foreach(pull!,get_current_queue(pull_queue))
-        process_pushs()
-    end
 end
 
 function run_till_now()
@@ -35,18 +23,6 @@ function run_till_now()
             SV = dequeue!(push_queue)
             soft_push!(SV[1],SV[2])
         end
-    end
-end
-
-#make those pushs aware that they are to be executed in an order blocking way
-function process_pushs()
-    println("processing pushs")
-    if !isempty(push_queue)
-        #Push in a preserving way , async because we are already in the event loop
-        foreach(get_current_queue(push_queue)) do SV
-            strict_push!(SV[1],SV[2])
-        end
-        process_pulls()
     end
 end
 
@@ -62,9 +38,9 @@ function eventloop(eventloop_world_age = world_age())
         end
         wait(eventloop_cond)
     end catch e
+        st = catch_stacktrace()
         empty_queues()
         @schedule eventloop()
-        rethrow(e)
-        # @schedule eval(Main,:(error("Signal Error")))
+        return handle_err(e,st)
     end
 end

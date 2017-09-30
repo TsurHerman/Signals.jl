@@ -3,10 +3,14 @@
 (s::Signal)(val) = push!(s,val)
 import Base.push!
 function push!(s::Signal,val , async::Bool = async_mode())
-    if s.strict_push
-        strict_push!(s,val,async)
-    else
-        soft_push!(s,val,async)
+    try
+        if s.strict_push
+            strict_push!(s,val,async)
+        else
+            soft_push!(s,val,async)
+        end
+    catch e
+        handle_err(e,catch_stacktrace())
     end
 end
 
@@ -19,19 +23,19 @@ end
 
 function propogate!(s,async::Bool = async_mode())
     foreach(s.children) do child
-        if !valid(child)
-            if isempty(child.children)
-                if async
-                    enqueue!(pull_queue,child)
-                else
-                    pull!(child)
-                end
+        valid(child) && return nothing
+        if isempty(child.children)
+            if async
+                enqueue!(pull_queue,child)
             else
-                propogate!(child,async)
+                pull!(child)
             end
+        else
+            propogate!(child,async)
         end
     end
 end
+
 
 function strict_push!(s,val,async = async_mode())
     if !async || isempty(pull_queue)
@@ -47,7 +51,7 @@ export strict_push!
 #pull!
 (s::Signal)() = pull!(s)
 
-@inline function pull!(s::Signal)
+function pull!(s::Signal)
     if !valid(s)
         # store!(s,s.action())
         pull!(s,s.action)

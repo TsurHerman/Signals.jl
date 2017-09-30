@@ -12,6 +12,7 @@ debug_mode(b::Bool)  = _debug_mode.x = b
 
 
 include("core.jl")
+include("error.jl")
 include("pushpull.jl")
 include("eventloop.jl")
 

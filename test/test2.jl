@@ -11,6 +11,8 @@ B = Signal(typ(rand(4,4)))
 C = Signal(typ(rand(4,4)))
 D = Signal(typ(rand(4,4)))
 
+mymul(a,b) = a*b
+
 E = Signal(A,B;state = 0) do a,b,state
     state.x += 1;
     a*b
@@ -43,7 +45,6 @@ f(x) =begin
     try
         error("ff")
     catch e
-        showerror(STDERR, e, catch_stacktrace())
-        Atom.renderbt(catch_stacktrace())
+            showerror(STDERR, e, catch_stacktrace())
     end
 end
