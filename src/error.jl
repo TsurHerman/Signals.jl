@@ -6,14 +6,15 @@ function isatom()
 end
 
 handle_err(e,st) = begin
-    if isatom()
+    if isatom() && debug_mode() == false
         st = clean_stacktrace(st)
         ee = Main.Atom.EvalError(e,st)
         display(ee)
+        rethrow("Signal Exception")
     else
+        #TODO find out a way to do the same stacktrace prunning in normal Repl
         rethrow(e)
     end
-    rethrow("Signal Error")
 end
 
 clean_stacktrace(st) = begin

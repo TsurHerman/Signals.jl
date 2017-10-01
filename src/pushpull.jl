@@ -86,5 +86,3 @@ validate(sd::SignalData) = sd.valid = true
 
 
 nothing
-
-#wizardry
