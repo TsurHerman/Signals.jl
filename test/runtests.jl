@@ -1,7 +1,7 @@
 try
-    using Base.Test
-catch
     using Test
+catch
+    using Base.Test
 end
 
 using Proactive
