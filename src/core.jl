@@ -27,6 +27,7 @@ struct Signal
     data::SignalData
     action::SignalAction
     children::Vector{Signal}
+    binders::Vector{Signal}
     strict_push::Bool
     drop_repeats::Bool
     state::Ref
@@ -61,18 +62,22 @@ Signal(f::Function,args...;state = Stateless ,strict_push = false ,drop_repeats 
     Signal(strict_push,drop_repeats,_state,f,args...)
 end
 
+ifinalizer(f,x) = finalizer(x,f)
+
 Signal(strict_push::Bool,drop_repeats::Bool,state::Ref,f::Function,args...) = begin
     sd = SignalData(f(pull_args(args)...))
+    debug_mode() && ifinalizer(sd) do x
+        (x) -> @schedule println("Signal deleted!")
+    end
     action = SignalAction(f,args)
 
-    s = Signal(sd,action,Signal[],strict_push,drop_repeats,state)
+    s = Signal(sd,action,Signal[],Signal[],strict_push,drop_repeats,state)
 
     for arg in args
         isa(arg,Signal) && push!(arg.children,s)
     end
     s
 end
-
 
 import Base.getindex
 function getindex(s::Signal)

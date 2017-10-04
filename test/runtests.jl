@@ -1,4 +1,9 @@
-using Base.Test
+try
+    using Base.Test
+catch
+    using Test
+end
+
 using Proactive
 
 include("push_pull.jl")

@@ -48,3 +48,11 @@ f(x) =begin
             showerror(STDERR, e, catch_stacktrace())
     end
 end
+
+
+A = 1
+B = 2
+C = let A=A,B=B
+    A += B
+end
+A
