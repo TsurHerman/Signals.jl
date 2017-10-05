@@ -39,12 +39,10 @@ Signal(f::Function,args...;state = Stateless ,strict_push = false ,pull_type = S
     Signal(strict_push,pull_type,_state,f,args...)
 end
 
-ifinalizer(f,x) = finalizer(x,f)
-
 Signal(strict_push::Bool,pull_type,state::Ref,f::Function,args...) = begin
     sd = SignalData(f(pull_args(args)...))
-    debug_mode() && ifinalizer(sd) do x
-        (x) -> @schedule println("Signal deleted!")
+    if debug_mode()
+        finalizer(sd,(x) -> @schedule println("Signal deleted!"))
     end
     action = create_pull_action(f,args,pull_type)
 
