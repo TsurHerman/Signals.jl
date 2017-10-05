@@ -10,7 +10,7 @@ struct SignalAction{ARGS} <: Function
     args::ARGS
 end
 (sa::SignalAction)() = begin
-    sa.f(pull_args(sa.args)...)
+    sa.f(pull_args(sa)...)
 end
 
 pull_args(args) = map(args) do arg
@@ -42,6 +42,7 @@ end
 
  value(s::Signal) = value(s.data)
  value(sd::SignalData) = sd.x
+
 
  state(s::Signal) = s.state.x
 

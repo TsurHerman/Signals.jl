@@ -7,4 +7,5 @@ end
 using Proactive
 
 include("push_pull.jl")
+include("benchmark.jl")
 include("modifiers.jl")
