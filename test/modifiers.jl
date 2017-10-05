@@ -1,8 +1,8 @@
 
 @testset "drop_repeats" begin
     Proactive.async_mode(false)
-    A = Signal(1; drop_repeats = true)
-    B = Signal(A;state = 0 , drop_repeats = true) do a,state
+    A = Signal(1)
+    B = Signal(droprepeats(A);state = 0) do a,state
         state.x += 1
         a + 1
     end

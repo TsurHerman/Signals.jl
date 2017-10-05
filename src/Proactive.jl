@@ -10,8 +10,8 @@ const _debug_mode = Ref(false)
 debug_mode() = _debug_mode.x
 debug_mode(b::Bool)  = _debug_mode.x = b
 
-
-include("core.jl")
+include("pull_actions.jl")
+include("signal.jl")
 include("error.jl")
 include("pushpull.jl")
 include("eventloop.jl")

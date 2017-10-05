@@ -36,7 +36,6 @@ function propogate!(s,async::Bool = async_mode())
     end
 end
 
-
 function strict_push!(s,val,async = async_mode())
     if !async || isempty(pull_queue)
         soft_push!(s,val,async)
@@ -53,32 +52,16 @@ export strict_push!
 
 function pull!(s::Signal)
     if !valid(s)
-        # store!(s,s.action())
-        pull!(s,s.action)
+        s.action(s)
     end
     return value(s)
 end
 
-pull!(s::Signal,sa::SignalAction) = begin
-    _args = pull_args(sa)
-    if !valid(s)
-        old_val = value(s)
-        res = sa()
-        if s.drop_repeats && old_val == res
-            validate(s.data)
-            foreach(validate,s.children)
-        end
-    else
-        old_val = res = value(s)
-        foreach(validate,s.children)
-    end
-    store!(s,res)
-end
-pull!(x) = x
-
 validate(s::Signal) = begin
+    valid(s) && return
     if valid(s.action)
         validate(s.data)
+        foreach(validate,s.children)
     end
 end
 
