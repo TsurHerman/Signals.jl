@@ -12,7 +12,7 @@ function create_pull_action(f,args::ARGS,pt::PT, extra::E) where ARGS where PT w
     PullAction{pt,ARGS,E}(f,args,extra)
 end
 
-pull_args(sa::PullAction) = pull_args(sa.args)
+pull_args(pa::PullAction) = pull_args(pa.args)
 pull_args(args) = map(args) do arg
     typeof(arg) != Signal ? arg : pull!(arg)
 end
@@ -22,31 +22,15 @@ end
 valid_args(args) = all(args) do arg
     typeof(arg) != Signal ? true : valid(arg)
 end
+valid(pa::PullAction) = valid_args(pa.args)
 
-(sa::PullAction)() = sa.f(pull_args(sa)...)
+(pa::PullAction)() = pa.f(pull_args(pa)...)
 
 abstract type StandardPull <: PullType end
-(sa::PullAction{StandardPull,A,E})(s) where A where E = begin
-    pull_args(sa)
+(pa::PullAction{StandardPull,A,E})(s) where A where E = begin
+    pull_args(pa)
     if !valid(s)
-        store!(s,sa())
-    end
-    value(s)
-end
-
-abstract type DropRepeats <: PullType end
-droprepeats(s) = Signal(x->x,s;pull_type = DropRepeats)
-export droprepeats
-
-(sa::PullAction{DropRepeats,A,E})(s) where A where E = begin
-    pull_args(sa)
-    if !valid(s)
-        old_val = value(s)
-        res = sa()
-        if old_val == res
-            validate(s)
-        end
-        store!(s,res)
+        store!(s,pa())
     end
     value(s)
 end

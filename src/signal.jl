@@ -24,7 +24,6 @@ state(s::Signal) = s.state.x
 
 valid(s::Signal) = valid(s.data)
 valid(sd::SignalData) = sd.valid
-valid(sa::PullAction) = valid_args(sa.args)
 
 Signal(val;kwargs...) = begin
     Signal(()->val;kwargs...)
@@ -77,3 +76,13 @@ function invalidate!(s::Signal)
 end
 
 invalidate!(sd::SignalData) = sd.valid = false
+
+validate(s::Signal) = begin
+    valid(s) && return
+    if valid(s.action)
+        validate(s.data)
+        foreach(validate,s.children)
+    end
+end
+
+validate(sd::SignalData) = sd.valid = true

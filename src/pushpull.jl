@@ -57,15 +57,5 @@ function pull!(s::Signal)
     return value(s)
 end
 
-validate(s::Signal) = begin
-    valid(s) && return
-    if valid(s.action)
-        validate(s.data)
-        foreach(validate,s.children)
-    end
-end
-
-validate(sd::SignalData) = sd.valid = true
-
 
 nothing

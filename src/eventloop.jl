@@ -20,8 +20,8 @@ function run_till_now()
         foreach(pull!,pull_queue)
         empty!(pull_queue.store)
         if !isempty(push_queue)
-            SV = dequeue!(push_queue)
-            soft_push!(SV[1],SV[2])
+            (s,val) = dequeue!(push_queue)
+            soft_push!(s,val)
         end
     end
 end
