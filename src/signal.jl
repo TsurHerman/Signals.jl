@@ -4,6 +4,7 @@ mutable struct SignalData
 end
 SignalData(x) = SignalData(x,true)
 SignalData() = SignalData(nothing,false)
+SignalData(::Void) = SignalData()
 
 struct Signal
     data::SignalData
@@ -30,26 +31,24 @@ Signal(val;kwargs...) = begin
 end
 
 abstract type Stateless end
-Signal(f::Function,args...;state = Stateless ,strict_push = false ,pull_type = StandardPull) = begin
+Signal(f::Function,args...;state = Stateless ,strict_push = false ,pull_type = StandardPull, v0 = nothing) = begin
     _state = Ref(state)
     if state != Stateless
         args = (args...,_state)
     end
-    Signal(strict_push,pull_type,_state,f,args...)
+    sd = SignalData(v0)
+    action = PullAction(f,args,pull_type)
+    Signal(sd,action,strict_push,_state)
 end
 
-Signal(strict_push::Bool,pull_type,state::Ref,f::Function,args...) = begin
-    sd = SignalData(f(pull_args(args)...))
-    if debug_mode()
-        finalizer(sd,(x) -> @schedule println("Signal deleted!"))
-    end
-    action = create_pull_action(f,args,pull_type)
-
+Signal(sd::SignalData,action::PullAction, strict_push = false,state = Ref(nothing)) = begin
+    debug_mode() && finalizer(sd,x-> @schedule println("signal deleted"))
+    
     s = Signal(sd,action,Signal[],Signal[],strict_push,state)
-
-    for arg in args
+    for arg in action.args
         isa(arg,Signal) && push!(arg.children,s)
     end
+    s()
     s
 end
 

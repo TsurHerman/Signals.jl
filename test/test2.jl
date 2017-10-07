@@ -27,28 +27,13 @@ A(Z)
 
 @benchmark begin begin $A[] = $A[];end; $G(); end
 
-
-using Proactive: SignalData
-sd = SignalData(5)
-
-fn(f,args...;self = SignalData) = f(args...,self)
-
-fn(1,2;self = 5) do a,b,self
-    a+b+self
+A = Signal(1)
+B = Signal(A;state = A) do a,state
+    println("valid(B) = $(state.x.data.valid)")
 end
-
-f(x) =begin
-    try
-        error("ff")
-    catch e
-            showerror(STDERR, e, catch_stacktrace())
-    end
-end
-
-
-A = 1
-B = 2
-C = let A=A,B=B
-    A += B
-end
-A
+B.state.x = B
+B.data.valid = false
+A(10)
+A[] = 20
+A(10)
+B()
