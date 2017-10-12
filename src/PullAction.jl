@@ -12,9 +12,7 @@ pull_args(pa::PullAction) = pull_args(pa.args)
 pull_args(args) = map(args) do arg
     typeof(arg) != Signal ? arg : pull!(arg)
 end
-value_args(args) = map(args) do arg
-    typeof(arg) != Signal ? arg : value(arg)
-end
+
 valid_args(args) = all(args) do arg
     typeof(arg) != Signal ? true : valid(arg)
 end

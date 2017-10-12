@@ -27,13 +27,22 @@ A(Z)
 
 @benchmark begin begin $A[] = $A[];end; $G(); end
 
+
+using Proactive
+Proactive.async_mode(true)
+Proactive.debug_mode(true)
+
 A = Signal(1)
-B = Signal(A;state = A) do a,state
-    println("valid(B) = $(state.x.data.valid)")
+B = Signal(1)
+
+derA = Signal(A;state = 0) do a,state
+    state.x += 1
+    println("derived from A $a")
 end
-B.state.x = B
-B.data.valid = false
-A(10)
-A[] = 20
-A(10)
-B()
+
+derB = Signal(B;state = 0) do b,state
+    state.x += 1
+    println("derived from B $b")
+end
+
+bind!(A,B,true)

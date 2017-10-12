@@ -43,7 +43,7 @@ end
 
 Signal(sd::SignalData,action::PullAction, strict_push = false,state = Ref(nothing)) = begin
     debug_mode() && finalizer(sd,x-> @schedule println("signal deleted"))
-    
+
     s = Signal(sd,action,Signal[],Signal[],strict_push,state)
     for arg in action.args
         isa(arg,Signal) && push!(arg.children,s)

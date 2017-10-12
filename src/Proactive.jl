@@ -16,5 +16,7 @@ include("error.jl")
 include("pushpull.jl")
 include("eventloop.jl")
 include("operators.jl")
+include("bind.jl")
+
 
 end # module

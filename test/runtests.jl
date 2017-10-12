@@ -8,4 +8,5 @@ using Proactive
 
 include("push_pull.jl")
 include("benchmark.jl")
-include("modifiers.jl")
+include("operators.jl")
+include("binding.jl")
