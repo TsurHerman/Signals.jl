@@ -2,43 +2,21 @@
 #push!
 (s::Signal)(val) = push!(s,val)
 import Base.push!
-function push!(s::Signal,val , async::Bool = async_mode())
+function push!(s::Signal,val)
     try
         if s.strict_push
-            strict_push!(s,val,async)
+            strict_push!(s,val)
         else
-            soft_push!(s,val,async)
+            soft_push!(s,val)
         end
     catch e
         handle_err(e,catch_stacktrace())
     end
 end
 
-function soft_push!(s,val,async::Bool = async_mode())
-    set_value!(s,val)
-    propogate!(s,async)
-    async && notify(eventloop_cond)
-    val
-end
-
-function propogate!(s,async::Bool = async_mode())
-    foreach(s.children) do child
-        valid(child) && return nothing
-        if isempty(child.children)
-            if async
-                enqueue!(pull_queue,child)
-            else
-                pull!(child)
-            end
-        else
-            propogate!(child,async)
-        end
-    end
-end
-
-function strict_push!(s,val,async = async_mode())
-    if !async || isempty(pull_queue)
-        soft_push!(s,val,async)
+function strict_push!(s,val)
+    if !async_mode() || isempty(pull_queue)
+        soft_push!(s,val)
     else
         enqueue!(push_queue,(s,val))
         notify(eventloop_cond)
@@ -47,15 +25,52 @@ function strict_push!(s,val,async = async_mode())
 end
 export strict_push!
 
+function soft_push!(s,val)
+    set_value!(s,val)
+    propogate!(s)
+    async_mode() && notify(eventloop_cond)
+    val
+end
+
+function pull_enqueue(s)
+    if async_mode()
+        enqueue!(pull_queue,s)
+    else
+        pull!(s)
+    end
+end
+
+function propogate!(s::Signal)
+    if isempty(s.children)
+        pull_enqueue(s)
+    else
+        propogate!(s.children)
+    end
+end
+
+function propogate!(children::Vector{Signal})
+    foreach(children) do child
+        propogate!(child)
+    end
+end
+
 #pull!
 (s::Signal)() = pull!(s)
 
 function pull!(s::Signal)
     if !valid(s)
-        s.action(s)
+        action(s)
     end
     return value(s)
 end
 
+abstract type StandardPull <: PullType end
+(pa::PullAction{StandardPull,ARGS})(s::Signal) where ARGS = begin
+    args = pull_args(pa)
+    if !valid(s)
+        store!(s,pa.f(args...))
+    end
+    value(s)
+end
 
 nothing

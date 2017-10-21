@@ -26,23 +26,3 @@ A(Z)
 @benchmark $A($Z)
 
 @benchmark begin begin $A[] = $A[];end; $G(); end
-
-
-using Proactive
-Proactive.async_mode(true)
-Proactive.debug_mode(true)
-
-A = Signal(1)
-B = Signal(1)
-
-derA = Signal(A;state = 0) do a,state
-    state.x += 1
-    println("derived from A $a")
-end
-
-derB = Signal(B;state = 0) do b,state
-    state.x += 1
-    println("derived from B $b")
-end
-
-bind!(A,B,true)

@@ -100,10 +100,7 @@ end
 Sample the value of `B` whenever `A` updates.
 """
 function sampleon(A,B)
-    Signal(A;state = B) do a,state
-        local B = state.x
-        B()
-    end
+    Signal(x->B(),A)
 end
 export sampleon
 
@@ -155,3 +152,13 @@ end
     end
     store!(s,res)
 end
+
+"""
+    echo(s::Signal,name = "")
+
+echos the value of signal `s` on each update, you can specify a `name` to distinguish between different echos
+"""
+function echo(s::Signal,name = "")
+    Signal(x->println("signal $name value : $x"),s)
+end
+export echo
