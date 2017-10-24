@@ -32,25 +32,19 @@ function soft_push!(s,val)
     val
 end
 
+function propogate!(s::Signal)
+    if isempty(s.children)
+        pull_enqueue(s)
+    else
+        foreach(propogate!,s.children)
+    end
+end
+
 function pull_enqueue(s)
     if async_mode()
         enqueue!(pull_queue,s)
     else
         pull!(s)
-    end
-end
-
-function propogate!(s::Signal)
-    if isempty(s.children)
-        pull_enqueue(s)
-    else
-        propogate!(s.children)
-    end
-end
-
-function propogate!(children::Vector{Signal})
-    foreach(children) do child
-        propogate!(child)
     end
 end
 

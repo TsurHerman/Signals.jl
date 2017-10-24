@@ -26,3 +26,23 @@ A(Z)
 @benchmark $A($Z)
 
 @benchmark begin begin $A[] = $A[];end; $G(); end
+
+addprocs(1)
+@everywhere using Proactive
+Proactive.async_mode(true)
+
+A = Signal(1)
+B = remote_signal(x->x+1,A)
+
+A(10)
+A("ff")
+
+@noinline f(a,b) = a+b
+a5() = try
+    f("ff",1)
+catch
+    st = catch_stacktrace()
+    println(st)
+end
+b = Task(a5)
+A = schedule(b)

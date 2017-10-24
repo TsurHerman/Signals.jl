@@ -115,3 +115,19 @@ end
     B[] = "hh"; A[] = 100
     @test D() == "hh"
 end
+
+@testset "async_signal" begin
+    addprocs(1)
+    @everywhere using Proactive
+    Proactive.async_mode(true)
+
+    A = Signal(1)
+    B = async_signal(x->x+1,A)
+    C = remote_signal(x->x+1,A)
+
+    A(10)
+    sleep(1)
+    @test B() == 11
+    sleep(1)
+    @test C() == 11
+end

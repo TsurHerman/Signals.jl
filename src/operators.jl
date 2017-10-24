@@ -74,7 +74,7 @@ when(f::Function,condition::Signal,args...) = begin
     s = Signal(args...;pull_type = When , state = condition) do args,state
         f(args...)
     end
-    push!(condition.children,s)
+    push!(condition.children,s) #?
     s
 end
 export when
@@ -84,7 +84,7 @@ export when
     args = pull_args(pa)
     if !valid(s)
         cond = condition()
-        typeof(cond) != Bool && throw_condition_exception(pa)
+        typeof(cond) != Bool && throw_condition_exception(pa,condition)
         if cond
             store!(s,pa.f(args...))
         else
