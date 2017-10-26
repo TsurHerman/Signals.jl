@@ -162,3 +162,65 @@ function echo(s::Signal,name = "")
     Signal(x->println("signal $name value : $x"),s)
 end
 export echo
+
+abstract type RecursionFree <: PullType end
+"""
+    recursion_free(f::Function,args...)
+
+creates a `Signal` whos action `f(args...)` is protected against infinite
+loop recursion.
+
+    julia> A = Signal(1)
+    julia> B = recursion_free(A) do a
+                A(a+1)
+           end
+
+    julia> A(10)
+    10
+    julia> A[]
+    11
+In the example above ,if `recursion_free` were to be subsituted
+with regular `Signal` it would result in an infinite loop in the non-async mode
+`recursion_free` protects against that
+
+"""
+function recursion_free(f::Function,args...)
+    s = Signal(args...;pull_type = RecursionFree , state = false) do args,state
+        f(args...)
+    end
+    for arg in args
+        if typeof(arg) <: Signal
+            #move to the top of the food chain
+            unshift!(arg.children,pop!(arg.children))
+        end
+    end
+end
+export recursion_free
+
+(pa::PullAction{RecursionFree,A})(s) where A = begin
+    if s.state.x == true
+        validate(s.data)
+        validate(s)
+    else
+        s.state.x = true
+        args = pull_args(pa)
+        if !valid(s)
+            store!(s,pa.f(args...))
+        end
+    end
+    s.state.x = false
+    value(s)
+end
+
+import Base.count
+"""
+
+    count(s::Signal)
+Create a `Signal` that counts updates to input `Signal` `s`
+"""
+function count(s::Signal)
+    Signal(s;state = 0) do s,state
+        state.x += 1
+    end
+end
+export count

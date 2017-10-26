@@ -80,11 +80,10 @@ push `false` into switch `switch(false)` to turn it back on push `true` `switch(
 .Consider using `fps` if you want specify the timing signal by frequency, rather than delay.
 """
 function every(dt)
-    res = Signal(time();state = Timer(t->t,0)) do t,state
-        t
+    res = Signal(dt) do state
+        time()
     end
-    children = WeakRef(res.children)
-    ref = WeakRef(res.data)
+    timer =
     push_to_ref(ref,children) = if ref.value != nothing
         # invalidate!(res)
         store!(ref.value,time())
@@ -96,6 +95,8 @@ function every(dt)
     res
 end
 export every
+
+
 
 
 

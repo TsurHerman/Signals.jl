@@ -85,5 +85,3 @@ validate(s::Signal) = begin
 end
 
 validate(sd::SignalData) = sd.valid = true
-
-action(s::Signal) = s.action(s)

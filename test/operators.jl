@@ -131,3 +131,23 @@ end
     sleep(1)
     @test C() == 11
 end
+
+@testset "recursion_free" begin
+    A = Signal(1)
+    C = count(A)
+
+    B = recursion_free(A) do a
+        A(a+1)
+    end
+
+    Proactive.async_mode(true)
+    A(10)
+    sleep(0.1)
+    @test C() == 3
+    @test A() == 11
+
+    Proactive.async_mode(false)
+    A(100)
+    @test C() == 4
+    @test A() == 101
+end
