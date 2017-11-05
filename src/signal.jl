@@ -38,13 +38,13 @@ Signal(f::Function,args...;state = Stateless ,strict_push = false ,pull_type = S
     end
     sd = SignalData(v0)
     action = PullAction(f,args,pull_type)
-    Signal(sd,action,strict_push,_state)
+    Signal(sd,action,_state,strict_push)
 end
 
-Signal(sd::SignalData,action::PullAction, strict_push = false,state = Ref(nothing)) = begin
+Signal(sd::SignalData,action::PullAction,state = Stateless, strict_push = false) = begin
     debug_mode() && finalizer(sd,x-> @schedule println("signal deleted"))
 
-    s = Signal(sd,action,Signal[],Signal[],strict_push,state)
+    s = Signal(sd,action,Signal[],Signal[],strict_push,Ref(state))
     for arg in action.args
         isa(arg,Signal) && push!(arg.children,s)
     end

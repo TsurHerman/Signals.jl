@@ -51,9 +51,11 @@ end
 
 abstract type When <: PullType end
 """
-    when(f, condition::Signal, args...)
+    when(f, condition::Signal, args... ; v0 = nothing)
 
-creates a conditional `Signal`\n
+creates a `Signal` that will update to `f(args...)` when any of its input `args`
+updates *only if* `condition` has value `true`. if `condition != true` in
+the time of creation the signal will be initialized to value `v0`
 # Example
 
     julia> A = Signal(1)
@@ -70,11 +72,11 @@ creates a conditional `Signal`\n
     julia> A(12)
     12
 """
-when(f::Function,condition::Signal,args...) = begin
-    s = Signal(args...;pull_type = When , state = condition) do args,state
-        f(args...)
-    end
-    push!(condition.children,s) #?
+when(f::Function,condition::Signal,args...; v0 = nothing) = begin
+    action = PullAction(f,args,When)
+    sd = SignalData(condition() ? action() : v0)
+    s = Signal(sd,action,condition)
+    push!(condition.children,s) #update signal graph if condition changes to true
     s
 end
 export when
@@ -83,9 +85,7 @@ export when
     condition = s.state.x
     args = pull_args(pa)
     if !valid(s)
-        cond = condition()
-        typeof(cond) != Bool && throw_condition_exception(pa,condition)
-        if cond
+        if condition() == true
             store!(s,pa.f(args...))
         else
             validate(s)
@@ -112,8 +112,8 @@ fold over past values
 reduce the given signal `sig` with the given binary operator `op`.
  the value of the signal just after creation is `op(v0,sig[])`
 """
-function foldp(op,v0,sig)
-    acc = SignalData(op(v0,sig[]))
+function foldp(op::Function,v0,sig::Signal)
+    acc = SignalData(op(v0,sig()))
     action = PullAction((acc,sig)) do acc,s
         op(value(acc),s)
     end
@@ -185,9 +185,9 @@ with regular `Signal` it would result in an infinite loop in the non-async mode
 
 """
 function recursion_free(f::Function,args...)
-    s = Signal(args...;pull_type = RecursionFree , state = false) do args,state
-        f(args...)
-    end
+    action = PullAction(f,args,RecursionFree)
+    sd = SignalData(action())
+    s = Signal(sd,action,false)
     for arg in args
         if typeof(arg) <: Signal
             #move to the top of the food chain
@@ -215,7 +215,7 @@ end
 import Base.count
 """
 
-    count(s::Signal)
+    count_signal(s::Signal)
 Create a `Signal` that counts updates to input `Signal` `s`
 """
 function count(s::Signal)
@@ -224,3 +224,17 @@ function count(s::Signal)
     end
 end
 export count
+
+"""
+
+    previous(s::Signal)
+Create a `Signal` that holds previous input to `s`
+"""
+function previous(s::Signal)
+    Signal(s;state = s()) do s,state
+        ret = state.x
+        state.x = s
+        ret
+    end
+end
+export previous

@@ -51,9 +51,6 @@ end
 #pull!
 (s::Signal)() = pull!(s)
 
-locked(s) = s.lock.x
-locked(s,val) = s.lock.x = val
-
 function pull!(s::Signal)
     if !valid(s)
         action(s)
@@ -61,15 +58,17 @@ function pull!(s::Signal)
     return value(s)
 end
 
+action(s::Signal) =  s.action(s)
+
 abstract type StandardPull <: PullType end
 (pa::PullAction{StandardPull,ARGS})(s::Signal) where ARGS = begin
     args = pull_args(pa)
     if !valid(s)
-        store!(s,pa.f(args...))
+        store!(s,pa())
     end
     value(s)
 end
 
-action(s::Signal) =  s.action(s)
+
 
 nothing
