@@ -33,6 +33,8 @@ function soft_push!(s,val)
 end
 
 function propogate!(s::Signal)
+    # propogated(s) && return
+    # propogated(s,true)
     if isempty(s.children)
         pull_enqueue(s)
     else
