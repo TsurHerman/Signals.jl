@@ -9,7 +9,7 @@ avg_delay = Signal(/,sum_updates,nupdates)
 sleep(1)
 # 1 == 1
 
-A = fps(10;duration = 2)
+A = fps(10;duration = 1)
 pA = previous(A)
 C = Signal(-,A,pA)
 nupdates = count(C)
@@ -19,7 +19,7 @@ sleep(1)
 abs(avg_delay() - 0.1) < 0.01
 
 #every
-A = every(1/20;duration = 2)
+A = every(1/20;duration = 1)
 pA = previous(A)
 C = Signal(-,A,pA)
 nupdates = count(C)
@@ -64,3 +64,9 @@ A = Signal(2)
 for_signal(A;range = range,fps = 30) do a,i
     println(a^i)
 end
+
+
+# A=Signal(1)
+# B = Signal(a->a+1,A)
+# C = Signal((a,b)->a+b,A,B)
+# D = Signal((b,c)->b+c,B,C)
