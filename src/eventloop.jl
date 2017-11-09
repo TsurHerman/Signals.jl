@@ -11,14 +11,12 @@ function empty_queues()
 end
 
 function __init__()
-    global main_thread = current_task()
     @schedule eventloop()
 end
 
 function run_till_now()
     while !isempty(pull_queue)
         foreach(pull!,pull_queue)
-        empty!(pull_queue.store)
         if !isempty(push_queue)
             (s,val) = dequeue!(push_queue)
             soft_push!(s,val)
