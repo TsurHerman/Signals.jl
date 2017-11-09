@@ -1,3 +1,4 @@
+using Compat
 try
     using Test
 catch

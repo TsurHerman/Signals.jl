@@ -38,7 +38,9 @@ Signal(f::Function,args...;state = Stateless ,strict_push = false ,pull_type = S
     end
     sd = SignalData(v0)
     action = PullAction(f,args,pull_type)
-    Signal(sd,action,_state,strict_push)
+    s=Signal(sd,action,_state,strict_push)
+    v0 == nothing && s()
+    s
 end
 
 Signal(sd::SignalData,action::PullAction,state = Stateless, strict_push = false) = begin
@@ -48,7 +50,6 @@ Signal(sd::SignalData,action::PullAction,state = Stateless, strict_push = false)
     for arg in action.args
         isa(arg,Signal) && push!(arg.children,s)
     end
-    s()
     s
 end
 
