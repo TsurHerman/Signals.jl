@@ -61,7 +61,7 @@ B()
 
 range = Signal(1:5)
 A = Signal(2)
-for_signal(A;range = range,fps = 30) do a,i
+for_signal(range,A;fps = 30) do i,a
     println(a^i)
 end
 

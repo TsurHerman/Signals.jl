@@ -100,9 +100,9 @@ end
 export every
 
 """
-    s = fps(dt;duration = Inf)
+    s = fps(freq;duration = Inf)
 
-A signal that updates `fps` times a second to the current timestamp, for `duration` seconds
+A signal that updates `freq` times a second to the current timestamp, for `duration` seconds
 """
 function fps(freq;duration  = Inf)
     every(1/freq; duration = duration)
@@ -110,9 +110,9 @@ end
 export fps
 
 """
-    s = fpswhen(switch::Signal,dt;duration = Inf)
+    s = fpswhen(switch::Signal,freq;duration = Inf)
 
-A signal that updates 'fps' times a second to the current timestamp, for `duration` seconds
+A signal that updates 'freq' times a second to the current timestamp, for `duration` seconds
 if and only if the value of `switch` is `true`.
 """
 function fpswhen(switch::Signal,freq; duration = Inf)
@@ -130,31 +130,32 @@ end
 export fpswhen
 
 """
-     s = for_signal(f::Function,args...;range = 1:1, fps = 1)
-creates a `Signal` that updates to `f(args...,i) for i in range` every 1/fps seconds.
-`Signal` input arguments to `f` get replaced by their value.
- The loop starts whenever one of the agruments or when `range` itself updates. If the
+     s = for_signal(f::Function,range,args...; fps = 1)
+creates a `Signal` that updates to `f(i,args....) for i in range` every 1/fps seconds.
+`range` and `args` can be of type `Signal` or any other type. The loop starts whenever one of the agruments or when `range` itself updates. If the
 previous for loop did not complete it gets cancelled
 
 """
-function for_signal(f::Function,args...;range = 1:1,fps = 1)
-    res = Signal(start(valiue(range)))
-    signalref = WeakRef(Ref(res))
+function for_signal(f::Function,range,args...;fps = 1)
+    i_sig = Signal(start(pull!(range)))
     timer = Timer(0)
-    Signal(args...,range) do args,iter
+    Signal(args...;v0 = timer) do args
+        current_range = pull!(range)
         finalize(timer)
-        state = Ref(start(iter))
-        timer = Timer(dt,dt) do t
-            if done(iter,state.x)
+        state = Ref(start(current_range))
+        timer = Timer(1/fps,1/fps) do t
+            if done(current_range,state.x)
                 finalize(t)
             else
-                signalref.value.x(state.x)
-                (~,state.x ) = next(iter,state.x)
+                i_sig(state.x)
+                (~,state.x ) = next(current_range,state.x)
             end
             nothing
         end
     end
-    res
+    Signal(i_sig) do i
+        f(i,pull_args(args)...)
+    end
 end
 export for_signal
 

@@ -32,7 +32,7 @@ function eventloop(eventloop_world_age = world_age())
                 @schedule eventloop()
                 break
             end
-            debug_mode() && println("pull queue length: $(length(pull_queue))")
+            debug_mode() && println("pull-queue length: $(length(pull_queue))")
             run_till_now()
         end
         wait(eventloop_cond)

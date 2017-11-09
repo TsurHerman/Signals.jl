@@ -59,6 +59,7 @@ function pull!(s::Signal)
     end
     return value(s)
 end
+pull!(x) = x
 
 action(s::Signal) =  s.action(s)
 
