@@ -32,12 +32,12 @@ its `args` were updated. only works in push based paradigm. if v0 is not specifi
 then the initial value is `f(args...)`
 """
 function debounce(f,args...;delay = 1 , v0 = nothing)
-    ref_timer = Ref(Timer(identity,0))
+    timer = Timer(identity,0)
     f_args = PullAction(f,args)
     debounced_signal = Signal(v0 == nothing ? f_args() : v0)
     Signal(args...) do args
-        finalize(ref_timer.x)
-        ref_timer.x = Timer(t->debounced_signal(f_args()),delay)
+        finalize(timer)
+        timer = Timer(t->debounced_signal(f_args()),delay)
     end
     debounced_signal
 end
@@ -131,24 +131,36 @@ export fpswhen
 
 """
      s = for_signal(f::Function,range,args...; fps = 1)
-creates a `Signal` that updates to `f(i,args....) for i in range` every 1/fps seconds.
+creates a `Signal` that updates to `f(i,args....) for i in range` every `1/fps` seconds.
 `range` and `args` can be of type `Signal` or any other type. The loop starts whenever one of the agruments or when `range` itself updates. If the
-previous for loop did not complete it gets cancelled
+previous for loop did not complete it gets cancelled. For example:
 
+    range = Signal(1:5)
+    A = Signal(2)
+    for_signal(range,A;fps = 30) do i,a
+        println(a^i)
+    end
 """
 function for_signal(f::Function,range,args...;fps = 1)
-    i_sig = Signal(start(pull!(range)))
+    i_sig = Signal(first(pull!(range)))
     timer = Timer(0)
     Signal(args...;v0 = timer) do args
+        println(args)
         current_range = pull!(range)
         finalize(timer)
         state = Ref(start(current_range))
         timer = Timer(1/fps,1/fps) do t
-            if done(current_range,state.x)
+            try
+                if done(current_range,state.x)
+                    finalize(t)
+                else
+                    (item,state.x ) = next(current_range,state.x)
+                    i_sig(item)
+                end
+            catch e
+                st = catch_stacktrace()
                 finalize(t)
-            else
-                i_sig(state.x)
-                (~,state.x ) = next(current_range,state.x)
+                handle_err(st,e)
             end
             nothing
         end

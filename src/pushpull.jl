@@ -55,6 +55,7 @@ end
 
 function pull!(s::Signal)
     if !valid(s)
+        propogated(s,false)
         action(s)
     end
     return value(s)

@@ -26,7 +26,8 @@ store!(s::Signal,val) = store!(s.data,val)
 value(s::Signal) = value(s.data)
 value(sd::SignalData) = sd.x
 
-state(s::Signal) = s.state.x
+state(s::Signal) = state(s.state)
+state(ref::Ref) = ref.x
 
 propogated(s::Signal) = propogated(s.data)
 propogated(sd::SignalData) = sd.propogated
@@ -86,7 +87,10 @@ function invalidate!(s::Signal)
     end
 end
 
-invalidate!(sd::SignalData) = sd.valid = false
+invalidate!(sd::SignalData) = begin
+    sd.valid = false
+    sd.propogated = false
+end
 
 validate(s::Signal) = begin
     valid(s) && return
