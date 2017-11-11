@@ -28,6 +28,8 @@ value(sd::SignalData) = sd.x
 
 state(s::Signal) = state(s.state)
 state(ref::Ref) = ref.x
+state(s::Signal,val) = state(s.state,val)
+state(ref::Ref,val) = ref.x = val
 
 propogated(s::Signal) = propogated(s.data)
 propogated(sd::SignalData) = sd.propogated

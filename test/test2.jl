@@ -46,3 +46,29 @@ catch
 end
 b = Task(a5)
 A = schedule(b)
+
+
+
+
+
+using Proactive
+Proactive.async_mode(true)
+A_strict = Signal(1; strict_push = true)
+B_strict = Signal(A_strict;state = 0) do a,state
+    state.x += a
+    a + 1
+end
+
+A_soft = Signal(1)
+B_soft = Signal(A_soft;state = 0) do a,state
+    state.x += a
+    a + 1
+end
+
+A_soft(0);sleep(1) #restart the eventlopp
+
+
+B_strict.state.x == 1
+A_strict(10);A_strict(100);
+yield();
+B_strict.state.x == 111

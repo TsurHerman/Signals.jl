@@ -31,13 +31,12 @@ sleep(1)
 abs(avg_delay() - 1/20) < 0.01
 
 #throttle
-A = fps(100;duration = 1)
-C = throttle(A; maxfps = 10) do a
-    a
-end
+A = every(1/100;duration = 2)
+C = throttle(x->x,A ; maxfps = 10)
 nupdates = count(C)
 sleep(1)
 nupdates() <= 10
+println(nupdates())
 
 #fpswhen
 switch = Signal(false)
@@ -61,13 +60,25 @@ abs(B() - 1) < 0.01
 B()
 
 
-
-#
+#for_signal
 range = Signal(1:5)
 A = Signal(2)
-for_signal(range,A;fps = 30) do i,a
-    println(a^i)
+B = for_signal(range,A;fps = 30) do i,a
+    # println(a^i)
+    i
 end
+D = count(B)
+D() == 1
+
+D(0);state(D,0)
+A(1)
+sleep(1)
+D() == 5
+
+
+
+
+
 
 
 # A=Signal(1)

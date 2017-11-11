@@ -2,21 +2,21 @@
 #push!
 (s::Signal)(val) = push!(s,val)
 import Base.push!
-function push!(s::Signal,val)
+function push!(s::Signal,val,async = async_mode())
     try
         if s.strict_push
-            strict_push!(s,val)
+            strict_push!(s,val,async)
         else
-            soft_push!(s,val)
+            soft_push!(s,val,async)
         end
     catch e
         handle_err(e,catch_stacktrace())
     end
 end
 
-function strict_push!(s,val)
-    if !async_mode() || isempty(pull_queue)
-        soft_push!(s,val)
+function strict_push!(s,val,async = async_mode())
+    if !async || isempty(pull_queue)
+        soft_push!(s,val,async)
     else
         enqueue!(push_queue,(s,val))
         notify(eventloop_cond)
@@ -25,25 +25,25 @@ function strict_push!(s,val)
 end
 export strict_push!
 
-function soft_push!(s,val)
+function soft_push!(s,val,async = async_mode())
     set_value!(s,val)
-    propogate!(s)
-    async_mode() && notify(eventloop_cond)
+    propogate!(s,async)
+    async && notify(eventloop_cond)
     val
 end
 
-function propogate!(s::Signal)
+function propogate!(s::Signal,async = async_mode())
     propogated(s) && return
     propogated(s,true)
     if isempty(s.children)
-        pull_enqueue(s)
+        pull_enqueue(s,async)
     else
-        foreach(propogate!,s.children)
+        foreach(x->propogate!(x,async),s.children)
     end
 end
 
-function pull_enqueue(s)
-    if async_mode()
+function pull_enqueue(s,async = async_mode())
+    if async
         enqueue!(pull_queue,s)
     else
         pull!(s)

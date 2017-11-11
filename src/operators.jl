@@ -27,7 +27,7 @@ import Base.filter
 """
     filter(f, default, signal)
 
-remove updates from the `signal` where `f` returns `false`. The filter will hold
+remove updates from the `signal` where `f` does not return `true`. The filter will hold
 the value default until f(value(signal)) returns true, when it will be updated
 to value(signal).
 """
@@ -40,7 +40,7 @@ end
 (pa::PullAction{Filter,Tuple{Signal}})(s) = begin
     source_val = pull!(pa.args[1])
     if !valid(s)
-        if pa.f(source_val)
+        if pa.f(source_val) == true
             store!(s,source_val)
         else
             validate(s)
@@ -82,7 +82,7 @@ end
 export when
 
 (pa::PullAction{When,A})(s) where A = begin
-    condition = s.state.x
+    condition = state(s)
     args = pull_args(pa)
     if !valid(s)
         if condition() == true

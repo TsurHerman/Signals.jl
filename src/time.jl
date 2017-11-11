@@ -51,8 +51,8 @@ if `1/maxfps` time has passed since the last time it updated. The resulting `Sig
 will be updated maximum of `maxfps` times per second
 """
 function throttle(f::Function,args... ; maxfps = 30)
-    sd = SignalData(f(pull_args(args)...))
     pa = PullAction(f,args,Throttle)
+    sd = SignalData(pa())
     state = Ref((1/maxfps,time()))
     Signal(sd,pa,state)
 end
@@ -66,7 +66,7 @@ export throttle
             validate(s)
         else
             s.state.x = (dt,time())
-            store!(s,pa.f(args...))
+            pa()
         end
     end
     value(s)
@@ -80,7 +80,7 @@ activate_timer(s,dt,duration) = begin
         if time_passed > duration || signalref.value == nothing
             finalize(t)
         else
-            signalref.value.x(time())
+            push!(signalref.value.x,time(),true)
         end
         nothing
     end
@@ -145,22 +145,17 @@ function for_signal(f::Function,range,args...;fps = 1)
     i_sig = Signal(first(pull!(range)))
     timer = Timer(0)
     Signal(args...;v0 = timer) do args
-        println(args)
         current_range = pull!(range)
         finalize(timer)
         state = Ref(start(current_range))
+        (item,state.x ) = next(current_range,state.x)
+        i_sig(item)
         timer = Timer(1/fps,1/fps) do t
-            try
-                if done(current_range,state.x)
-                    finalize(t)
-                else
-                    (item,state.x ) = next(current_range,state.x)
-                    i_sig(item)
-                end
-            catch e
-                st = catch_stacktrace()
+            if done(current_range,state.x)
                 finalize(t)
-                handle_err(st,e)
+            else
+                (item,state.x ) = next(current_range,state.x)
+                i_sig(item)
             end
             nothing
         end
