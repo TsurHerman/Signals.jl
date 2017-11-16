@@ -10,18 +10,19 @@ to the value of the first encountered item
 """
 
 function buffer(input; buf_size = Inf, timespan = 1, type_stable = false)
-    _buf = type_stable ? Vector{typeof(f(pull!.(args)...))} : Vector{Any}[]
+    _buf = type_stable ? typeof(input())[] : Any[]
     sbuf = foldp(push!,_buf,input)
     cond = Signal(sbuf;state = time()) do in,state
         last_update = state.x
         (time() - last_update > timespan) || (length(in) >= buf_size)
     end
-    when(cond,sbuf) do buf
-        cond.state.x = time()
+    when(cond,sbuf; v0 = _buf) do buf
+        state(cond,time())
         frame = copy(buf)
         empty!(_buf)
         frame
     end
+
 end
 export buffer
 
