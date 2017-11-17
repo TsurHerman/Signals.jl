@@ -106,3 +106,14 @@ validate(sd::SignalData) = begin
     sd.propogated = false
     sd.valid = true
 end
+
+import Base.show
+show(io::IO, s::Signal) = show(io,MIME"text/plain"(),s)
+
+show(io::IO, ::MIME"text/plain", s::Signal) = begin
+    state_str = "\nstate{$(typeof(s.state.x))}: $(s.state.x)"
+    state_str = state(s) == Proactive.Stateless ? "" : state_str
+    valid_str = valid(s) ? "" : "(invalidated)"
+    print_with_color(200,io,"Signal";bold = true)
+    print(io, "$valid_str $state_str \nvalue: ",s[])
+end
