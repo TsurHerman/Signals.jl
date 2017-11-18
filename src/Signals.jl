@@ -1,6 +1,6 @@
-module Proactive
+module Signals
 
-export Signal,state
+export Signal
 
 const _async_mode = Ref(true)
 async_mode() = _async_mode.x

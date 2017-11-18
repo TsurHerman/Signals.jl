@@ -1,7 +1,7 @@
 @testset "fps and every" begin
     #fps
     for tv in [true,false]
-        Proactive.async_mode(tv)
+        Signals.async_mode(tv)
         A = fps(20;duration = 1)
         pA = previous(A)
         C = Signal(-,A,pA)
@@ -36,7 +36,7 @@ end
 
 @testset "throttle and debounce" begin
     for tv in [true,false]
-        Proactive.async_mode(tv)
+        Signals.async_mode(tv)
         #throttle
         A = every(1/100;duration = 1)
         C = throttle(x->x,A ; maxfps = 10)
@@ -58,7 +58,7 @@ end
 
 @testset "for_signal" begin
     for tv in [true,false]
-        Proactive.async_mode(tv)
+        Signals.async_mode(tv)
         #for_signal
         range = Signal(1:5)
         A = Signal(2)
@@ -82,7 +82,7 @@ end
 
 @testset "buffer" begin
     for tv in [true,false]
-        Proactive.async_mode(tv)
+        Signals.async_mode(tv)
         A = Signal(2;strict_push = true)
         B = buffer(A; buf_size =  3, timespan = Inf)
         @test B() == [2]

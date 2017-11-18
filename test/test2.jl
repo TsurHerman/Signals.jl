@@ -1,5 +1,5 @@
-using Proactive
-Proactive.async_mode(false)
+using Signals
+Signals.async_mode(false)
 # write your own tests here
 # @test 1
 
@@ -28,8 +28,8 @@ A(Z)
 @benchmark begin begin $A[] = $A[];end; $G(); end
 
 addprocs(1)
-@everywhere using Proactive
-Proactive.async_mode(true)
+@everywhere using Signals
+Signals.async_mode(true)
 
 A = Signal(1)
 B = remote_signal(x->x+1,A)
@@ -51,8 +51,8 @@ A = schedule(b)
 
 
 
-using Proactive
-Proactive.async_mode(true)
+using Signals
+Signals.async_mode(true)
 A_strict = Signal(1; strict_push = true)
 B_strict = Signal(A_strict;state = 0) do a,state
     state.x += a

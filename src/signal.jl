@@ -26,6 +26,7 @@ store!(s::Signal,val) = store!(s.data,val)
 value(s::Signal) = value(s.data)
 value(sd::SignalData) = sd.x
 
+"""Retrieve the internal state of a `Signal`"""
 state(s::Signal) = state(s.state)
 state(ref::Ref) = ref.x
 state(s::Signal,val) = state(s.state,val)
@@ -112,7 +113,7 @@ show(io::IO, s::Signal) = show(io,MIME"text/plain"(),s)
 
 show(io::IO, ::MIME"text/plain", s::Signal) = begin
     state_str = "\nstate{$(typeof(s.state.x))}: $(s.state.x)"
-    state_str = state(s) == Proactive.Stateless ? "" : state_str
+    state_str = state(s) == Signals.Stateless ? "" : state_str
     valid_str = valid(s) ? "" : "(invalidated)"
     print_with_color(200,io,"Signal";bold = true)
     print(io, "$valid_str $state_str \nvalue: ",s[])

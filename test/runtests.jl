@@ -5,7 +5,7 @@ catch
     using Base.Test
 end
 
-using Proactive
+using Signals
 
 include("push_pull.jl")
 include("benchmark.jl")

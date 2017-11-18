@@ -1,5 +1,5 @@
 @testset "bind" begin
-    Proactive.async_mode(false)
+    Signals.async_mode(false)
     A = Signal(1)
     B = Signal(1)
     C = Signal(1)

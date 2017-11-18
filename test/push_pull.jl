@@ -1,5 +1,5 @@
 @testset "push-pull" begin
-    Proactive.async_mode(false)
+    Signals.async_mode(false)
     A = Signal(1)
     B = Signal(x->x+1,A)
 
@@ -17,7 +17,7 @@
 end
 
 @testset "strict_push" begin
-    Proactive.async_mode(true)
+    Signals.async_mode(true)
     A_strict = Signal(1; strict_push = true)
     B_strict = Signal(A_strict;state = 0) do a,state
         state.x += a

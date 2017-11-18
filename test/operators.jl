@@ -1,6 +1,6 @@
 
 @testset "drop_repeats" begin
-    Proactive.async_mode(false)
+    Signals.async_mode(false)
     A = Signal(1)
     B = Signal(droprepeats(A);state = 0) do a,state
         state.x += 1
@@ -22,7 +22,7 @@
 end
 
 @testset "when do" begin
-    Proactive.async_mode(false)
+    Signals.async_mode(false)
     A = Signal(1)
     cond = Signal(A) do a
         a<10
@@ -42,7 +42,7 @@ end
 end
 
 @testset "sampleon" begin
-    Proactive.async_mode(false)
+    Signals.async_mode(false)
     A = Signal(1)
     B = Signal(10)
     C = sampleon(A,B)
@@ -60,7 +60,7 @@ end
 end
 
 @testset "filter" begin
-    Proactive.async_mode(false)
+    Signals.async_mode(false)
     A = Signal(100000)
     B = filter(x->x<10,1,A)
 
@@ -79,7 +79,7 @@ end
 end
 
 @testset "foldp" begin
-    Proactive.async_mode(false)
+    Signals.async_mode(false)
     A = Signal(1)
     B = foldp(+,0,A)
 
@@ -92,7 +92,7 @@ end
 end
 
 @testset "merge" begin
-    Proactive.async_mode(false)
+    Signals.async_mode(false)
     A = Signal(1)
     B = Signal(1)
     C = merge(A,B)
@@ -118,8 +118,8 @@ end
 
 @testset "async_signal" begin
     addprocs(1)
-    @everywhere using Proactive
-    Proactive.async_mode(true)
+    @everywhere using Signals
+    Signals.async_mode(true)
 
     A = Signal(1)
     B = async_signal(x->x+1,A)
@@ -140,13 +140,13 @@ end
         A(a+1)
     end
 
-    Proactive.async_mode(true)
+    Signals.async_mode(true)
     A(10)
     sleep(0.1)
     @test C() == 3
     @test A() == 11
 
-    Proactive.async_mode(false)
+    Signals.async_mode(false)
     A(100)
     @test C() == 4
     @test A() == 101

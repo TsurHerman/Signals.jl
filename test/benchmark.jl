@@ -5,7 +5,7 @@ Reactive.async_mode.x = false
 
 @testset "benchmark" begin
     println("")
-    Proactive.async_mode(false)
+    Signals.async_mode(false)
     n = 20
     signals = Vector{Signal}()
     push!(signals,Signal(1))
@@ -18,10 +18,10 @@ Reactive.async_mode.x = false
     end
     A = signals[1]
     ptime = @belapsed begin;$A[] = 0 ;$signals[end]();end
-    println("Proactive function call overhead on pull = $(ptime*1e9/n)ns") == nothing
+    println("Signals function call overhead on pull = $(ptime*1e9/n)ns") == nothing
 
     ptime = @belapsed begin $A(1);end
-    println("Proactive function call overhead on push = $(ptime*1e9/n)ns") == nothing
+    println("Signals function call overhead on push = $(ptime*1e9/n)ns") == nothing
 
     signals = Vector{Reactive.Signal}()
     push!(signals,Reactive.Signal(1))
@@ -55,9 +55,9 @@ Reactive.async_mode.x = false
     end
     Z = typ(zeros(4,4))
     ptime = @belapsed begin;$A[] = $Z ;$G();end
-    println("Proactive function call time on pull (4x4 SArray multiply)= $(ptime*1e9/2)ns") == nothing
+    println("Signals function call time on pull (4x4 SArray multiply)= $(ptime*1e9/2)ns") == nothing
     ptime = @belapsed begin $A($Z);end
-    println("Proactive function call time on push (4x4 SArray multiply) = $(ptime*1e9/2)ns") == nothing
+    println("Signals function call time on push (4x4 SArray multiply) = $(ptime*1e9/2)ns") == nothing
 
     A = Reactive.Signal(typ(rand(4,4)))
     B = Reactive.Signal(typ(rand(4,4)))
@@ -95,9 +95,9 @@ Reactive.async_mode.x = false
     end
     Z = typ(zeros(4,4))
     ptime = @belapsed begin;$A[] = $Z ;$G();end
-    println("Proactive function call time on pull (4x4 Matrix)= $(ptime*1e9/2)ns") == nothing
+    println("Signals function call time on pull (4x4 Matrix)= $(ptime*1e9/2)ns") == nothing
     ptime = @belapsed begin $A($Z);end
-    println("Proactive function call time on push (4x4 Matrix) = $(ptime*1e9/2)ns") == nothing
+    println("Signals function call time on push (4x4 Matrix) = $(ptime*1e9/2)ns") == nothing
 
     A = Reactive.Signal(typ(rand(4,4)))
     B = Reactive.Signal(typ(rand(4,4)))
