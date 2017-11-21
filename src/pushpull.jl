@@ -14,6 +14,11 @@ function push!(s::Signal,val,async = async_mode())
     end
 end
 
+"""
+    strict_push!(s::Signal,val,async = Signals.async_mode() )
+sets `s` to `val` and propagate into derived signals, is `async` is `true`(default)
+then updates to derived signals will occur asynchronically
+"""
 function strict_push!(s,val,async = async_mode())
     if !async || isempty(pull_queue)
         soft_push!(s,val,async)

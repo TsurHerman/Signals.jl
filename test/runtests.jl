@@ -6,6 +6,7 @@ catch
 end
 
 using Signals
+using Signals: state
 
 include("push_pull.jl")
 include("benchmark.jl")

@@ -231,9 +231,10 @@ export count
 Create a `Signal` that holds previous input to `s`
 """
 function previous(s::Signal)
-    Signal(s;state = s()) do s,state
-        ret = state.x
-        state.x = s
+    prev = Signal(s())
+    Signal(s) do s
+        ret = prev[]
+        prev(s)
         ret
     end
 end
