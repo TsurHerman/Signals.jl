@@ -127,3 +127,7 @@ julia> B()
  0.28489   0.209641  0.249161
  0.980177  0.810512  0.571937
 ```
+
+## Fast
+Signals package was rigorously optimized for speed of execution
+and minimal recalculation of signal graph updates
