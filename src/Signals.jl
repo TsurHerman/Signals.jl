@@ -29,10 +29,13 @@ Create a source `Signal` with initial value `val`, setting
 will be carried out independently. otherwise if updates occur faster than what the `eventloop`
 can process, then only the last value before the `evetloop` kicks in will be used(*defualt*)
 
-    S = Signal(f,args...)
+    S = Signal(f,args...;v0 = nothing)
 Creates a derived `Signal` whos value is `f(args...)` , args can be of any type
-`Signal` args get replaced by their value before calling `f(args...)`. reads best with
-with `do` notation(see example).
+,`Signal` args get replaced by their value before calling `f(args...)`. reads best with
+with `do` notation(see example).if `v0` is not `nothing` then `f(args...)` will not
+be called directly after Signal creation instead the Signal will be initialized to have value v0
+
+
 
 ## Syntax
     S[] = val
