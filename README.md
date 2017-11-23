@@ -17,13 +17,15 @@ will be carried out independently. otherwise if updates occur faster than what t
 can process, then only the last value before the `eventloop` kicks in will be used(*default*)
 
 ```julia
-S = Signal(f,args...) ```
+S = Signal(f,args...)
+```
 
 Creates a derived `Signal` who's value is `f(args...)` , args can be of any type
 `Signal` args get replaced by their value before calling `f(args...)`. reads best with
 with `do` notation(see example).
 
 ## Syntax
+
 `S[] = val`
 
 sets the value of `S` to `val` without propagating the change to the rest of the signal graph,
