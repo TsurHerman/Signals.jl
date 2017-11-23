@@ -20,7 +20,7 @@ can process, then only the last value before the `eventloop` kicks in will be us
 S = Signal(f,args...)
 ```
 
-Creates a derived `Signal` who's value is `f(args...)` , args can be of any type
+Creates a derived `Signal` who's value is `f(args...)` , args can be of any type,
 `Signal` args get replaced by their value before calling `f(args...)`. reads best with
 with `do` notation(see example).
 
