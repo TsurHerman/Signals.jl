@@ -17,11 +17,10 @@ Reactive.async_mode.x = false
     end
     A = signals[1]
     ptime = @belapsed begin;$A[] = 0 ;$signals[end]();end
-    ptime = @belapsed begin;$A[] = 0 ;$signals[end]();end
     println("Signals function call overhead on pull = $(ptime*1e9/n)ns") == nothing
 
-    ptime = @belapsed begin $A(1);end
-    println("Signals function call overhead on push = $(ptime*1e9/n)ns") == nothing
+    ptime2 = @belapsed begin $A(1);end
+    println("Signals function call overhead on push = $(ptime2*1e9/n)ns") == nothing
 
     signals = Vector{Reactive.Signal}()
     push!(signals,Reactive.Signal(1))
