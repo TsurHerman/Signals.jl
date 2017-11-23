@@ -126,9 +126,9 @@ end
     C = remote_signal(x->x+1,A)
 
     A(10)
-    sleep(1)
+    sleep(2)
     @test B() == 11
-    sleep(1)
+    sleep(2)
     @test C() == 11
 end
 
