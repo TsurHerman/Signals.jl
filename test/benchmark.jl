@@ -18,6 +18,7 @@ Reactive.async_mode.x = false
     end
     A = signals[1]
     ptime = @belapsed begin;$A[] = 0 ;$signals[end]();end
+    ptime = @belapsed begin;$A[] = 0 ;$signals[end]();end
     println("Signals function call overhead on pull = $(ptime*1e9/n)ns") == nothing
 
     ptime = @belapsed begin $A(1);end
@@ -34,6 +35,8 @@ Reactive.async_mode.x = false
     A = signals[1]
 
     rtime = @belapsed Reactive.push!($A,Reactive.value($A))
+    rtime = @belapsed Reactive.push!($A,Reactive.value($A))
+
     println("Reactive function call overhead = $(rtime*1e9/n)ns") == nothing
     @test ptime < rtime
 
