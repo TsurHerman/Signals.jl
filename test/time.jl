@@ -52,7 +52,7 @@ end
 
         A(time())
         sleep(1.2)
-        @test abs(B() - 1) < 0.01
+        @test abs(B() - 1) < 0.02
     end
 end
 
