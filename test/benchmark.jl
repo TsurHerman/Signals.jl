@@ -10,8 +10,7 @@ Reactive.async_mode.x = false
     signals = Vector{Signal}()
     push!(signals,Signal(1))
     for i=1:n
-        A = Signal(signals[i];state = 0) do x,state
-            state.x += 1
+        A = Signal(signals[i]) do x
             x+1
         end
         push!(signals,A)
