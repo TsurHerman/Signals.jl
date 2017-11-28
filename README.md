@@ -47,27 +47,27 @@ sets the value of `S` to `val` and pushes the changes along the Signal graph
 gets the current value stored in `S` without pulling changes from the graph
 ## Example
 ```julia
-julia> A = Signal(1) #source Signal
+julia> A = Signal(1)   # source Signal
 Signal
 value: 1
 
-julia> B = 2 #non-Signal input
+julia> B = 2           # non-Signal input
 2
 
-julia>  C = Signal(A,B) do a,b #derived Signal
+julia>  C = Signal(A,B) do a,b   # derived Signal
             a+b
         end
 
 Signal
 value: 3
 
-julia> A[] = 10 # set value without propagation
+julia> A[] = 10        # set value without propagation
 10
-julia> C[] # reads current value
+julia> C[]             # read current value
 3
-julia> C() # pull latest changes from the Signal graph
+julia> C()             # pull latest changes from the Signal graph
 12
-julia> A(100) # set value to a signal and propagate this change
+julia> A(100)          # set value to a signal and propagate this change
 100
 julia> C[]
 102
@@ -92,7 +92,7 @@ Signals supports several reactive operators
 individual documentation files are available from within `julia`
 
 ## Time operators
-Signals supports several operators that takes time into consideration, for example `debounce` which executes only after a set amount of time has passed since the inputs were updated or `throttle` which creates a `Signal` that is guaranteed not to   
+Signals supports several operators that takes time into consideration, for example `debounce` which executes only after a set amount of time has passed since the inputs were updated or `throttle` which creates a `Signal` that is guaranteed not to
 be executed more than set amount of times per second.
 * `debounce`
 * `throttle`
@@ -116,13 +116,13 @@ Signals is dynamic , one can push values of any type to a source signal
 ```julia
 julia> using Signals
 julia> A = Signal(1)
-Signal  
+Signal
 value: 1
 
 julia> B = Signal(A,A) do a,b
        a*b
        end
-Signal  
+Signal
 value: 1
 
 julia> A(rand(3,3));
@@ -135,4 +135,4 @@ julia> B()
 
 ## Fast
 Signals package was rigorously optimized for speed of execution
-and minimal recalculation of signal graph updates, it achieves around `2x`-`4x` speedup over the current sate of the art functional reactive programming for julia
+and minimal recalculation of signal graph updates, it achieves around `2x`-`4x` speedup over the current state of the art functional reactive programming for julia
