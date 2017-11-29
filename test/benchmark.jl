@@ -6,7 +6,7 @@ Reactive.async_mode.x = false
 @testset "benchmark" begin
     println("")
     Signals.async_mode(false)
-    n = 20
+    n = 200
     signals = Vector{Signal}()
     push!(signals,Signal(1))
     for i=1:n
@@ -33,6 +33,7 @@ Reactive.async_mode.x = false
         push!(signals,A)
     end
     A = signals[1]
+    sleep(1)
 
     bench = @benchmark Reactive.push!($A,Reactive.value($A))
     rtime = median(bench).time
@@ -79,6 +80,7 @@ Reactive.async_mode.x = false
     end
     Z = typ(zeros(4,4))
     Reactive.async_mode.x = false
+    sleep(1)
     bench = @benchmark Reactive.push!($A,Reactive.value($A))
     rtime = median(bench).time
     println("Reactive function call time on push (4x4 SArray multiply) = $(rtime/2)ns") == nothing
@@ -122,6 +124,7 @@ Reactive.async_mode.x = false
         e*f
     end
     Z = typ(zeros(4,4))
+    sleep(1)
     bench = @benchmark Reactive.push!($A,Reactive.value($A))
     rtime = median(bench).time
     println("Reactive function call time on push (4x4 Matrix) = $(rtime/2)ns") == nothing
