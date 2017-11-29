@@ -16,11 +16,13 @@ Reactive.async_mode.x = false
         push!(signals,A)
     end
     A = signals[1]
-    ptime = @belapsed begin;$A[] = 0 ;$signals[end]();end
-    println("Signals function call overhead on pull = $(ptime*1e9/n)ns") == nothing
+    bench = @benchmark begin;$A[] = 0 ;$signals[end]();end;
+    ptime = median(bench).time
+    println("Signals function call overhead on pull = $(ptime/n)ns") == nothing
 
-    ptime2 = @belapsed begin $A(1);end
-    println("Signals function call overhead on push = $(ptime2*1e9/n)ns") == nothing
+    bench = @benchmark begin $A(1);end;
+    ptime = median(bench).time
+    println("Signals function call overhead on push = $(ptime/n)ns") == nothing
 
     signals = Vector{Reactive.Signal}()
     push!(signals,Reactive.Signal(1))
@@ -32,10 +34,10 @@ Reactive.async_mode.x = false
     end
     A = signals[1]
 
-    rtime = @belapsed Reactive.push!($A,Reactive.value($A))
-    rtime = @belapsed Reactive.push!($A,Reactive.value($A))
+    bench = @benchmark Reactive.push!($A,Reactive.value($A))
+    rtime = median(bench).time
 
-    println("Reactive function call overhead = $(rtime*1e9/n)ns") == nothing
+    println("Reactive function call overhead = $(rtime/n)ns") == nothing
     # @test ptime < rtime
 
     println("")
@@ -55,10 +57,12 @@ Reactive.async_mode.x = false
         e*f
     end
     Z = typ(zeros(4,4))
-    ptime = @belapsed begin;$A[] = $Z ;$G();end
-    println("Signals function call time on pull (4x4 SArray multiply)= $(ptime*1e9/2)ns") == nothing
-    ptime = @belapsed begin $A($Z);end
-    println("Signals function call time on push (4x4 SArray multiply) = $(ptime*1e9/2)ns") == nothing
+    bench = @benchmark begin;$A[] = $Z ;$G();end
+    ptime = median(bench).time
+    println("Signals function call time on pull (4x4 SArray multiply)= $(ptime/2)ns") == nothing
+    bench = @benchmark begin $A($Z);end
+    ptime = median(bench).time
+    println("Signals function call time on push (4x4 SArray multiply) = $(ptime/2)ns") == nothing
 
     A = Reactive.Signal(typ(rand(4,4)))
     B = Reactive.Signal(typ(rand(4,4)))
@@ -75,8 +79,9 @@ Reactive.async_mode.x = false
     end
     Z = typ(zeros(4,4))
     Reactive.async_mode.x = false
-    rtime = @belapsed Reactive.push!($A,Reactive.value($A))
-    println("Reactive function call time on push (4x4 SArray multiply) = $(rtime*1e9/2)ns") == nothing
+    bench = @benchmark Reactive.push!($A,Reactive.value($A))
+    rtime = median(bench).time
+    println("Reactive function call time on push (4x4 SArray multiply) = $(rtime/2)ns") == nothing
     # @test ptime < rtime
 
     println("")
@@ -96,10 +101,12 @@ Reactive.async_mode.x = false
         e*f
     end
     Z = typ(zeros(4,4))
-    ptime = @belapsed begin;$A[] = $Z ;$G();end
-    println("Signals function call time on pull (4x4 Matrix)= $(ptime*1e9/2)ns") == nothing
-    ptime = @belapsed begin $A($Z);end
-    println("Signals function call time on push (4x4 Matrix) = $(ptime*1e9/2)ns") == nothing
+    bench = @benchmark begin;$A[] = $Z ;$G();end
+    ptime = median(bench).time
+    println("Signals function call time on pull (4x4 Matrix)= $(ptime/2)ns") == nothing
+    bench = @benchmark begin $A($Z);end
+    ptime = median(bench).time
+    println("Signals function call time on push (4x4 Matrix) = $(ptime/2)ns") == nothing
 
     A = Reactive.Signal(typ(rand(4,4)))
     B = Reactive.Signal(typ(rand(4,4)))
@@ -115,9 +122,9 @@ Reactive.async_mode.x = false
         e*f
     end
     Z = typ(zeros(4,4))
-    Reactive.async_mode.x = false
-    rtime = @belapsed Reactive.push!($A,Reactive.value($A))
-    println("Reactive function call time on push (4x4 Matrix) = $(rtime*1e9/2)ns") == nothing
+    bench = @benchmark Reactive.push!($A,Reactive.value($A))
+    rtime = median(bench).time
+    println("Reactive function call time on push (4x4 Matrix) = $(rtime/2)ns") == nothing
     # @test ptime < rtime
 
 end
