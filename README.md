@@ -38,7 +38,7 @@ useful in pull based paradigm
 
 `pull!` Signal, pulling any changes in the Signal graph that affects `S`
 
-`S(val)
+`S(val)`
 
 sets the value of `S` to `val` and pushes the changes along the Signal graph
 
