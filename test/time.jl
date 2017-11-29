@@ -98,6 +98,6 @@ end
         B = buffer(A; buf_size =  Inf, timespan = 0.5 , type_stable = true)
         sleep(1)
         @test typeof(B()) == Vector{typeof(A())}
-        @test abs(B()[end] - B()[1] - 0.5) < 0.1
+        @test abs(B()[end] - B()[1] - 0.5) < 0.15
     end
 end
