@@ -12,7 +12,7 @@
         @test abs(avg_delay() - 1/10) < 0.05 #relax test to pass appveyor build test
 
         #every
-        A = every(1/10;duration = 1)
+        A = every(1/10;duration = 1.5)
         pA = previous(A)
         C = Signal(-,A,pA)
         nupdates = count(C)
@@ -29,7 +29,7 @@
         @test C() <= 1
 
         switch(true)
-        sleep(1.2)
+        sleep(1.5)
         @test C() >= 9 #relax test to pass appveyor build test
     end
 end
