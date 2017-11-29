@@ -27,13 +27,13 @@ Reactive.async_mode.x = false
     signals = Vector{Reactive.Signal}()
     push!(signals,Reactive.Signal(1))
     for i=1:n
-        A = Reactive.map(signals[i]) do x
+        A = Reactive.foreach(signals[i]) do x
             x+1
         end
         push!(signals,A)
     end
     A = signals[1]
-    sleep(1)
+    sleep(2)
 
     bench = @benchmark Reactive.push!($A,Reactive.value($A))
     rtime = median(bench).time
@@ -69,18 +69,18 @@ Reactive.async_mode.x = false
     B = Reactive.Signal(typ(rand(4,4)))
     C = Reactive.Signal(typ(rand(4,4)))
     D = Reactive.Signal(typ(rand(4,4)))
-    E = Reactive.map(A,B) do a,b
+    E = Reactive.foreach(A,B) do a,b
         a*b
     end
-    F = Reactive.map(C,D) do a,b
+    F = Reactive.foreach(C,D) do a,b
         a*b
     end
-    G = Reactive.map(E,F) do e,f
+    G = Reactive.foreach(E,F) do e,f
         e*f
     end
     Z = typ(zeros(4,4))
     Reactive.async_mode.x = false
-    sleep(1)
+
     bench = @benchmark Reactive.push!($A,Reactive.value($A))
     rtime = median(bench).time
     println("Reactive function call time on push (4x4 SArray multiply) = $(rtime/2)ns") == nothing
@@ -114,17 +114,16 @@ Reactive.async_mode.x = false
     B = Reactive.Signal(typ(rand(4,4)))
     C = Reactive.Signal(typ(rand(4,4)))
     D = Reactive.Signal(typ(rand(4,4)))
-    E = Reactive.map(A,B) do a,b
+    E = Reactive.foreach(A,B) do a,b
         a*b
     end
-    F = Reactive.map(C,D) do a,b
+    F = Reactive.foreach(C,D) do a,b
         a*b
     end
-    G = Reactive.map(E,F) do e,f
+    G = Reactive.foreach(E,F) do e,f
         e*f
     end
     Z = typ(zeros(4,4))
-    sleep(1)
     bench = @benchmark Reactive.push!($A,Reactive.value($A))
     rtime = median(bench).time
     println("Reactive function call time on push (4x4 Matrix) = $(rtime/2)ns") == nothing
