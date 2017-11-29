@@ -36,7 +36,7 @@ Reactive.async_mode.x = false
     rtime = @belapsed Reactive.push!($A,Reactive.value($A))
 
     println("Reactive function call overhead = $(rtime*1e9/n)ns") == nothing
-    @test ptime < rtime
+    # @test ptime < rtime
 
     println("")
 
@@ -76,7 +76,7 @@ Reactive.async_mode.x = false
     Z = typ(zeros(4,4))
     rtime = @belapsed Reactive.push!($A,Reactive.value($A))
     println("Reactive function call time on push (4x4 SArray multiply) = $(rtime*1e9/2)ns") == nothing
-    @test ptime < rtime
+    # @test ptime < rtime
 
     println("")
 
