@@ -27,7 +27,7 @@ import Base.filter
 """
     filter(f, default, signal)
 
-remove updates from the `signal` where `f` does not return `true`. The filter will hold
+Remove updates from the `signal` where `f` does not return `true`. The filter will hold
 the value default until f(value(signal)) returns true, when it will be updated
 to value(signal).
 """
@@ -51,12 +51,13 @@ end
 
 abstract type When <: PullType end
 """
-    when(f, condition::Signal, args... ; v0 = nothing)
+    when(f, condition::Signal, args...; v0 = nothing)
 
-creates a `Signal` that will update to `f(args...)` when any of its input `args`
-updates *only if* `condition` has value `true`. if `condition != true` in
-the time of creation the signal will be initialized to value `v0`
-# Example
+Create a `Signal` that will update to `f(args...)` when any of its input `args`
+updates *only if* `condition` has value `true`. If `condition != true` in
+the time of creation the signal will be initialized to value `v0`.
+
+# Examples
 
     julia> A = Signal(1)
     julia> condition = Signal(A) do a

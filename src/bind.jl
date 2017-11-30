@@ -2,7 +2,7 @@
 """
     bind!(dest::Signal, src::Signal)
 
-for every update to `src` also update `dest` with the same value
+For every update to `src` also update `dest` with the same value.
 """
 function bind!(dest::Signal, src::Signal)
     push!(dest.binders,Signal(x->dest(x),src))
@@ -12,11 +12,11 @@ export bind!
 """
     unbind!(dst::Signal,src::Signal)
 
-remove bindings from `src` to `dst` that were previously created using `bind`
+Remove bindings from `src` to `dst` that were previously created using `bind`.
 
     unbind!(dst::Signal)
 
-remove all bindings that were previously created using `bind` that will cause `dst` to update
+Remove all bindings that were previously created using `bind` that will cause `dst` to update.
 """
 function unbind!(dst::Signal,src::Signal)
     b_idx  = findfirst(b->b.action.args[1] == src,dst.binders)
@@ -39,7 +39,7 @@ import Base.detach
 """
     detach(s::Signal)
 
-detach a signal `s` from the signal graph making it unreachable and ready for GC.
+Detach a signal `s` from the signal graph making it unreachable and ready for GC.
 """
 function detach(s::Signal)
     parents = Iterators.filter(x->isa(x,Signal),s.action.args)

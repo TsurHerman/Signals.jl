@@ -23,34 +23,37 @@ include("time.jl")
 
 
 @doc """
-    S = Signal(val;strict_push = false)
-Create a source `Signal` with initial value `val`, setting
-`strict_push` to `true` gurrantees that every push to this `Signal`
-will be carried out independently. otherwise if updates occur faster than what the `eventloop`
-can process, then only the last value before the `evetloop` kicks in will be used(*defualt*)
+    S = Signal(val; strict_push = false)
 
-    S = Signal(f,args...;v0 = nothing)
-Creates a derived `Signal` whos value is `f(args...)` , args can be of any type
+Create a source `Signal` with initial value `val`, setting `strict_push` to `true`
+guarantees that every push to this `Signal` will be carried out independently.
+Otherwise if updates occur faster than what the `eventloop` can process, then only
+the last value before the `eventloop` kicks in will be used(*default*).
+
+    S = Signal(f,args...; v0 = nothing)
+
+Create a derived `Signal` whos value is `f(args...)` , args can be of any type
 ,`Signal` args get replaced by their value before calling `f(args...)`. reads best with
 with `do` notation(see example).if `v0` is not `nothing` then `f(args...)` will not
 be called directly after Signal creation instead the Signal will be initialized to have value v0
 
+# Syntax
 
-
-## Syntax
     S[] = val
-sets the value of `S` to `val` without propogating the change to the rest of the signal graph,
-usefull in pull based paradigm
+Set the value of `S` to `val` without propogating the change to the rest of the signal graph,
+usefull in pull based paradigm.
 
     S()
-`pull!` Signal, pulling any changes in the Signal graph that affects `S`
+`pull!` Signal, pulling any changes in the Signal graph that affects `S`.
 
     S(val)
-sets the value of `S` to `val` and pushes the changes along the Signal graph
+Set the value of `S` to `val` and pushes the changes along the Signal graph.
 
     S[]
-gets the current value stored in `S` without pulling changes from the graph
-## Example
+Get the current value stored in `S` without pulling changes from the graph.
+
+# Examples
+
     julia> A = Signal(1) #source Signal
     Signal
     value: 1
