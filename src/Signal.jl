@@ -1,7 +1,7 @@
 mutable struct SignalData
     x
     valid::Bool
-    propogated::Bool
+    propagated::Bool
 end
 SignalData(x) = SignalData(x,true,false)
 SignalData() = SignalData(nothing,false,false)
@@ -17,7 +17,7 @@ struct Signal
 end
 
 store!(sd::SignalData,val) = begin
-     sd.propogated = false
+     sd.propagated = false
      sd.valid = true;
      sd.x = val
  end
@@ -32,10 +32,10 @@ state(ref::Ref) = ref.x
 state(s::Signal,val) = state(s.state,val)
 state(ref::Ref,val) = ref.x = val
 
-propogated(s::Signal) = propogated(s.data)
-propogated(sd::SignalData) = sd.propogated
-propogated(s::Signal,val::Bool) = propogated(s.data,val)
-propogated(sd::SignalData,val::Bool) = sd.propogated = val
+propagated(s::Signal) = propagated(s.data)
+propagated(sd::SignalData) = sd.propagated
+propagated(s::Signal,val::Bool) = propagated(s.data,val)
+propagated(sd::SignalData,val::Bool) = sd.propagated = val
 
 
 valid(s::Signal) = valid(s.data)
@@ -92,7 +92,7 @@ end
 
 invalidate!(sd::SignalData) = begin
     sd.valid = false
-    sd.propogated = false
+    sd.propagated = false
 end
 
 validate(s::Signal) = begin
@@ -104,7 +104,7 @@ validate(s::Signal) = begin
 end
 
 validate(sd::SignalData) = begin
-    sd.propogated = false
+    sd.propagated = false
     sd.valid = true
 end
 

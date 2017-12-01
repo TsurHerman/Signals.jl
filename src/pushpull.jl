@@ -38,8 +38,8 @@ function soft_push!(s,val,async = async_mode())
 end
 
 function propogate!(s::Signal,async = async_mode())
-    propogated(s) && return
-    propogated(s,true)
+    propagated(s) && return
+    propagated(s,true)
     if isempty(s.children)
         pull_enqueue(s,async)
     else
@@ -60,7 +60,7 @@ end
 
 function pull!(s::Signal)
     if !valid(s)
-        propogated(s,false)
+        propagated(s,false)
         action(s)
     end
     return value(s)
