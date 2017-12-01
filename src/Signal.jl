@@ -110,7 +110,7 @@ end
 import Base.show
 show(io::IO, s::Signal) = show(io,MIME"text/plain"(),s)
 
-functon show(io::IO, ::MIME"text/plain", s::Signal)
+function show(io::IO, ::MIME"text/plain", s::Signal)
     state_str = "\nstate{$(typeof(s.state.x))}: $(s.state.x)"
     state_str = state(s) == Signals.Stateless ? "" : state_str
     valid_str = valid(s) ? "" : "(invalidated)"
