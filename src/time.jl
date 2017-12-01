@@ -1,12 +1,12 @@
 """
     s = buffer(input; buf_size = Inf, timespan = 1, type_stable = false)
-creates a signal who buffers updates to signal `input` until maximum size of `buf_size`
-or until `timespan` seconds have passed. The signal value is the last
-full buffer emitted or an empty vector if the buffer have never
-been filled before.
 
-buffer type will be `Any` unless `type_stable` is set to `true`, then it will be set
-to the value of the first encountered item
+Create a signal whos buffers updates to signal `input` until maximum size of `buf_size`
+or until `timespan` seconds have passed. The signal value is the last full buffer emitted
+or an empty vector if the buffer have never been filled before.
+
+Buffer type will be `Any` unless `type_stable` is set to `true`, then it will be set
+to the value of the first encountered item.
 """
 
 function buffer(input; buf_size = Inf, timespan = 1, type_stable = false)
@@ -27,10 +27,11 @@ end
 export buffer
 
 """
-    debounce(f,args...;delay = 1 , v0 = nothing)
-Creates a `Signal` whos action `f(args...)` will be called only after `delay` seconds have passed since the last time
-its `args` were updated. only works in push based paradigm. if v0 is not specified
-then the initial value is `f(args...)`
+    debounce(f, args...; delay = 1, v0 = nothing)
+
+Create a `Signal` whos action `f(args...)` will be called only after `delay` seconds
+have passed since the last time its `args` were updated. Only works in push based paradigm.
+If `v0` is not specified then the initial value is `f(args...)`.
 """
 function debounce(f,args...;delay = 1 , v0 = nothing)
     timer = Timer(identity,0)
@@ -46,10 +47,11 @@ export debounce
 
 abstract type Throttle <: PullType end
 """
-    throttle(f::Function,args...;maxfps = 0.03)
-Creates a throttled `Signal` whos action `f(args...)` will be called only
+    throttle(f::Function, args...; maxfps = 0.03)
+
+Create a throttled `Signal` whos action `f(args...)` will be called only
 if `1/maxfps` time has passed since the last time it updated. The resulting `Signal`
-will be updated maximum of `maxfps` times per second
+will be updated maximum of `maxfps` times per second.
 """
 function throttle(f::Function,args... ; maxfps = 30)
     pa = PullAction(f,args,Throttle)
@@ -89,9 +91,9 @@ activate_timer(s,dt,duration) = begin
 end
 
 """
-    s = every(dt;duration = Inf)
+    s = every(dt; duration = Inf)
 
-A signal that updates every `dt` seconds to the current timestamp, for `duration` seconds
+A signal that updates every `dt` seconds to the current timestamp, for `duration` seconds.
 """
 function every(dt;duration  = Inf)
     res = Signal(time())
@@ -101,9 +103,9 @@ end
 export every
 
 """
-    s = fps(freq;duration = Inf)
+    s = fps(freq; duration = Inf)
 
-A signal that updates `freq` times a second to the current timestamp, for `duration` seconds
+A signal that updates `freq` times a second to the current timestamp, for `duration` seconds.
 """
 function fps(freq;duration  = Inf)
     every(1/freq; duration = duration)
@@ -111,7 +113,7 @@ end
 export fps
 
 """
-    s = fpswhen(switch::Signal,freq;duration = Inf)
+    s = fpswhen(switch::Signal, freq; duration = Inf)
 
 A signal that updates 'freq' times a second to the current timestamp, for `duration` seconds
 if and only if the value of `switch` is `true`.
@@ -131,10 +133,14 @@ end
 export fpswhen
 
 """
-     s = for_signal(f::Function,range,args...; fps = 1)
-creates a `Signal` that updates to `f(i,args....) for i in range` every `1/fps` seconds.
-`range` and `args` can be of type `Signal` or any other type. The loop starts whenever one of the agruments or when `range` itself updates. If the
-previous for loop did not complete it gets cancelled. For example:
+     s = for_signal(f::Function, range, args...; fps = 1)
+
+Create a `Signal` that updates to `f(i,args....) for i in range` every `1/fps` seconds.
+`range` and `args` can be of type `Signal` or any other type. The loop starts whenever
+one of the arguments or when `range` itself updates. If the previous for loop did not
+complete it gets cancelled.
+
+# Examples
 
     range = Signal(1:5)
     A = Signal(2)

@@ -1,9 +1,9 @@
 @noinline call_no_inline(f,args) = f(args...)
 """
     s = async_signal(f, args...; init = nothing)
-create a signal initialized to `init` whos action `f(args...)`  will run asynchronously in a different task
-whenever its arguments update.async signals only work
-in a push based paradigm.
+
+Create a signal initialized to `init` whos action `f(args...)`  will run asynchronously in a
+different task whenever its arguments update.async signals only work in a push based paradigm.
 """
 function async_signal(f, args...; init = nothing)
     res = Signal(init)
@@ -22,9 +22,10 @@ end
 export async_signal
 
 """
-    s = remote_signal(f args...;init = nothing, procid = first(workers()) )
-create a signal initialized to `init` whos action `f(args...)`  will run remotely in a process
-with id `procid` , whenever its arguments update.remote signals only work
+    s = remote_signal(f, args...; init = nothing, procid = first(workers()))
+
+Create a signal initialized to `init` whos action `f(args...)` will run remotely in
+a process with id `procid`, whenever its arguments update.remote signals only work
 in a push based paradigm.
 """
 function remote_signal(f,args...;init = nothing, procid = first(workers()) )
