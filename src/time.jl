@@ -59,7 +59,7 @@ function throttle(f::Function,args... ; maxfps = 30)
 end
 export throttle
 
-(pa::PullAction{Throttle,A})(s) where A = begin
+function (pa::PullAction{Throttle,A})(s) where A
     (dt,last_update) = s.state.x
     args = pull_args(pa)
     if !valid(s)
@@ -73,7 +73,7 @@ export throttle
     value(s)
 end
 
-activate_timer(s,dt,duration) = begin
+function activate_timer(s,dt,duration)
     signalref = WeakRef(Ref(s))
     start_time = time()
     t = Timer(dt,dt) do t

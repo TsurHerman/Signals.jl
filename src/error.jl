@@ -5,7 +5,7 @@ function isatom()
         Main.Juno._active == true
 end
 
-handle_err(e,st) = begin
+function handle_err(e,st)
     if isatom() && debug_mode() == false
         st = clean_stacktrace(st)
         ee = Main.Atom.EvalError(e,st)
@@ -17,7 +17,7 @@ handle_err(e,st) = begin
     end
 end
 
-clean_stacktrace(st) = begin
+function clean_stacktrace(st)
     idx = findfirst([sf.func == :pull! for sf in st])
     idx = idx == 0 ? length(st) : idx
     idx = idx == 1 ? 2 : idx

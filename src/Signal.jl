@@ -16,7 +16,7 @@ struct Signal
     state::Ref
 end
 
-store!(sd::SignalData,val) = begin
+function store!(sd::SignalData,val)
      sd.propogated = false
      sd.valid = true;
      sd.x = val
@@ -41,12 +41,11 @@ propogated(sd::SignalData,val::Bool) = sd.propogated = val
 valid(s::Signal) = valid(s.data)
 valid(sd::SignalData) = sd.valid
 
-Signal(val;kwargs...) = begin
-    Signal(()->val;kwargs...)
-end
+Signal(val;kwargs...) = Signal(()->val;kwargs...)
 
 abstract type Stateless end
-Signal(f::Function,args...;state = Stateless ,strict_push = false ,pull_type = StandardPull, v0 = nothing) = begin
+function Signal(f::Function,args...;state = Stateless ,strict_push = false,
+                pull_type = StandardPull, v0 = nothing)
     _state = Ref(state)
     if state != Stateless
         args = (args...,_state)
@@ -58,7 +57,7 @@ Signal(f::Function,args...;state = Stateless ,strict_push = false ,pull_type = S
     s
 end
 
-Signal(sd::SignalData,action::PullAction,state = Stateless, strict_push = false) = begin
+function Signal(sd::SignalData,action::PullAction,state = Stateless, strict_push = false)
     debug_mode() && finalizer(sd,x-> @schedule println("signal deleted"))
 
     s = Signal(sd,action,Signal[],Signal[],strict_push,Ref(state))
@@ -90,12 +89,12 @@ function invalidate!(s::Signal)
     end
 end
 
-invalidate!(sd::SignalData) = begin
+function invalidate!(sd::SignalData)
     sd.valid = false
     sd.propogated = false
 end
 
-validate(s::Signal) = begin
+function validate(s::Signal)
     valid(s) && return
     if valid(s.action)
         validate(s.data)
@@ -103,7 +102,7 @@ validate(s::Signal) = begin
     end
 end
 
-validate(sd::SignalData) = begin
+function validate(sd::SignalData)
     sd.propogated = false
     sd.valid = true
 end
@@ -111,7 +110,7 @@ end
 import Base.show
 show(io::IO, s::Signal) = show(io,MIME"text/plain"(),s)
 
-show(io::IO, ::MIME"text/plain", s::Signal) = begin
+functon show(io::IO, ::MIME"text/plain", s::Signal)
     state_str = "\nstate{$(typeof(s.state.x))}: $(s.state.x)"
     state_str = state(s) == Signals.Stateless ? "" : state_str
     valid_str = valid(s) ? "" : "(invalidated)"
