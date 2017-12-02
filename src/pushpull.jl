@@ -71,7 +71,7 @@ pull!(x) = x
 action(s::Signal) =  s.action(s)
 
 abstract type StandardPull <: PullType end
-(pa::PullAction{StandardPull,ARGS})(s::Signal) where ARGS = begin
+function (pa::PullAction{StandardPull,ARGS})(s::Signal) where ARGS
     args = pull_args(pa)
     if !valid(s)
         store!(s,pa())

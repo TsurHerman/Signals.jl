@@ -9,7 +9,7 @@ as the previous value of the signal.
 droprepeats(s) = Signal(x->x,s;pull_type = DropRepeats)
 export droprepeats
 
-(pa::PullAction{DropRepeats,A})(s) where A = begin
+function (pa::PullAction{DropRepeats,A})(s) where A
     args = pull_args(pa)
     if !valid(s)
         old_val = value(s)
@@ -31,13 +31,13 @@ Remove updates from the `signal` where `f` does not return `true`. The filter wi
 the value default until f(value(signal)) returns true, when it will be updated
 to value(signal).
 """
-filter(f::Function,v0,s::Signal) = begin
+function filter(f::Function,v0,s::Signal)
     sd = SignalData(f(s[]) ? s[] : v0)
     action = PullAction(f,(s,),Filter)
     Signal(sd,action)
 end
 
-(pa::PullAction{Filter,Tuple{Signal}})(s) = begin
+function (pa::PullAction{Filter,Tuple{Signal}})(s)
     source_val = pull!(pa.args[1])
     if !valid(s)
         if pa.f(source_val) == true
@@ -73,7 +73,7 @@ the time of creation the signal will be initialized to value `v0`.
     julia> A(12)
     12
 """
-when(f::Function,condition::Signal,args...; v0 = nothing) = begin
+function when(f::Function,condition::Signal,args...; v0 = nothing)
     action = PullAction(f,args,When)
     sd = SignalData(condition() ? action() : v0)
     s = Signal(sd,action,condition)
@@ -82,7 +82,7 @@ when(f::Function,condition::Signal,args...; v0 = nothing) = begin
 end
 export when
 
-(pa::PullAction{When,A})(s) where A = begin
+function (pa::PullAction{When,A})(s) where A
     condition = state(s)
     args = pull_args(pa)
     if !valid(s)
@@ -141,7 +141,7 @@ function merge(in1::Signal, rest::Signal...)
     Signal(sd,action)
 end
 
-(pa::PullAction{Merge,A})(s) where A = begin
+function (pa::PullAction{Merge,A})(s) where A
     res = s[]
     for arg in pa.args
         if !valid(arg)
@@ -198,7 +198,7 @@ function recursion_free(f::Function,args...)
 end
 export recursion_free
 
-(pa::PullAction{RecursionFree,A})(s) where A = begin
+function (pa::PullAction{RecursionFree,A})(s) where A
     if s.state.x == true
         validate(s.data)
         validate(s)
