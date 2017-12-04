@@ -6,10 +6,10 @@ abstract type DropRepeats <: PullType end
 Drop updates to `input` whenever the new value is the same
 as the previous value of the signal.
 """
-droprepeats(s) = Signal(x->x,s;pull_type = DropRepeats)
+droprepeats(s) = Signal(x -> x, s; pull_type = DropRepeats)
 export droprepeats
 
-function (pa::PullAction{DropRepeats,A})(s) where A
+function (pa::PullAction{DropRepeats, A})(s) where A
     args = pull_args(pa)
     if !valid(s)
         old_val = value(s)
@@ -17,7 +17,7 @@ function (pa::PullAction{DropRepeats,A})(s) where A
         if old_val == res
             validate(s)
         end
-        store!(s,res)
+        store!(s, res)
     end
     value(s)
 end
@@ -31,17 +31,17 @@ Remove updates from the `signal` where `f` does not return `true`. The filter wi
 the value default until f(value(signal)) returns true, when it will be updated
 to value(signal).
 """
-function filter(f::Function,v0,s::Signal)
+function filter(f::Function, v0, s::Signal)
     sd = SignalData(f(s[]) ? s[] : v0)
-    action = PullAction(f,(s,),Filter)
-    Signal(sd,action)
+    action = PullAction(f, (s,), Filter)
+    Signal(sd, action)
 end
 
-function (pa::PullAction{Filter,Tuple{Signal}})(s)
+function (pa::PullAction{Filter, Tuple{Signal}})(s)
     source_val = pull!(pa.args[1])
     if !valid(s)
         if pa.f(source_val) == true
-            store!(s,source_val)
+            store!(s, source_val)
         else
             validate(s)
         end
@@ -73,21 +73,21 @@ the time of creation the signal will be initialized to value `v0`.
     julia> A(12)
     12
 """
-function when(f::Function,condition::Signal,args...; v0 = nothing)
-    action = PullAction(f,args,When)
+function when(f::Function, condition::Signal, args...; v0 = nothing)
+    action = PullAction(f, args, When)
     sd = SignalData(condition() ? action() : v0)
-    s = Signal(sd,action,condition)
-    push!(condition.children,s) #update signal graph if condition changes to true
+    s = Signal(sd, action, condition)
+    push!(condition.children, s) # update signal graph if condition changes to true
     s
 end
 export when
 
-function (pa::PullAction{When,A})(s) where A
+function (pa::PullAction{When, A})(s) where A
     condition = state(s)
     args = pull_args(pa)
     if !valid(s)
         if condition() == true
-            store!(s,pa.f(args...))
+            store!(s, pa.f(args...))
         else
             validate(s)
         end
@@ -100,8 +100,8 @@ end
 
 Sample the value of `B` whenever `A` updates.
 """
-function sampleon(A,B)
-    Signal(x->B(),A)
+function sampleon(A, B)
+    Signal(x -> B(), A)
 end
 export sampleon
 
@@ -113,12 +113,12 @@ fold over past values
 reduce the given signal `sig` with the given binary operator `op`.
  the value of the signal just after creation is `op(v0,sig[])`
 """
-function foldp(op::Function,v0,sig::Signal)
-    acc = SignalData(op(v0,sig()))
-    action = PullAction((acc,sig)) do acc,s
-        op(value(acc),s)
+function foldp(op::Function, v0, sig::Signal)
+    acc = SignalData(op(v0, sig()))
+    action = PullAction((acc, sig)) do acc, s
+        op(value(acc), s)
     end
-    Signal(acc,action)
+    Signal(acc, action)
 end
 export foldp
 
@@ -132,16 +132,16 @@ any of the inputs update. If many signals update at the same time,
 the value of the *last* non-valid(updated) input signal in the argument list is taken.
 """
 function merge(in1::Signal, rest::Signal...)
-    args = (in1,rest...)
+    args = (in1, rest...)
     proxy_args = map(args) do arg
-        Signal(x->x,arg)
+        Signal(x -> x, arg)
     end
     sd = SignalData(value(last(args)))
-    action = PullAction(()->nothing,proxy_args,Merge)
-    Signal(sd,action)
+    action = PullAction(() -> nothing, proxy_args, Merge)
+    Signal(sd, action)
 end
 
-function (pa::PullAction{Merge,A})(s) where A
+function (pa::PullAction{Merge, A})(s) where A
     res = s[]
     for arg in pa.args
         if !valid(arg)
@@ -151,7 +151,7 @@ function (pa::PullAction{Merge,A})(s) where A
             end
         end
     end
-    store!(s,res)
+    store!(s, res)
 end
 
 """
@@ -159,8 +159,8 @@ end
 
 echos the value of signal `s` on each update, you can specify a `name` to distinguish between different echos
 """
-function echo(s::Signal,name = "")
-    Signal(x->println("signal $name value : $x"),s)
+function echo(s::Signal, name = "")
+    Signal(x -> println("signal $name value : $x"), s)
 end
 export echo
 
@@ -185,20 +185,20 @@ with regular `Signal` it would result in an infinite loop in the non-async mode
 `recursion_free` protects against that
 
 """
-function recursion_free(f::Function,args...)
-    action = PullAction(f,args,RecursionFree)
+function recursion_free(f::Function, args...)
+    action = PullAction(f, args, RecursionFree)
     sd = SignalData(action())
-    s = Signal(sd,action,false)
+    s = Signal(sd, action, false)
     for arg in args
         if typeof(arg) <: Signal
             #move to the top of the food chain
-            unshift!(arg.children,pop!(arg.children))
+            unshift!(arg.children, pop!(arg.children))
         end
     end
 end
 export recursion_free
 
-function (pa::PullAction{RecursionFree,A})(s) where A
+function (pa::PullAction{RecursionFree, A})(s) where A
     if s.state.x == true
         validate(s.data)
         validate(s)
@@ -206,7 +206,7 @@ function (pa::PullAction{RecursionFree,A})(s) where A
         s.state.x = true
         args = pull_args(pa)
         if !valid(s)
-            store!(s,pa.f(args...))
+            store!(s, pa.f(args...))
         end
     end
     s.state.x = false
@@ -220,7 +220,7 @@ import Base.count
 Create a `Signal` that counts updates to input `Signal` `s`
 """
 function count(s::Signal)
-    Signal(s;state = 0) do s,state
+    Signal(s; state = 0) do s, state
         state.x += 1
     end
 end

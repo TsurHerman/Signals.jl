@@ -5,11 +5,11 @@ export Signal
 
 const _async_mode = Ref(true)
 async_mode() = _async_mode.x
-async_mode(b::Bool)  = _async_mode.x = b
+async_mode(b::Bool) = _async_mode.x = b
 
 const _debug_mode = Ref(false)
 debug_mode() = _debug_mode.x
-debug_mode(b::Bool)  = _debug_mode.x = b
+debug_mode(b::Bool) = _debug_mode.x = b
 
 include("PullAction.jl")
 include("Signal.jl")
@@ -21,7 +21,6 @@ include("bind.jl")
 include("async_remote.jl")
 include("time.jl")
 
-
 @doc """
     S = Signal(val; strict_push = false)
 
@@ -32,10 +31,10 @@ the last value before the `eventloop` kicks in will be used(*default*).
 
     S = Signal(f,args...; v0 = nothing)
 
-Create a derived `Signal` whos value is `f(args...)` , args can be of any type
-,`Signal` args get replaced by their value before calling `f(args...)`. reads best with
+Create a derived `Signal` whos value is `f(args...)`, args can be of any type,
+`Signal` args get replaced by their value before calling `f(args...)`. reads best with
 with `do` notation(see example).if `v0` is not `nothing` then `f(args...)` will not
-be called directly after Signal creation instead the Signal will be initialized to have value v0
+be called directly after Signal creation instead the Signal will be initialized to have value v0.
 
 # Syntax
 
@@ -54,16 +53,16 @@ Get the current value stored in `S` without pulling changes from the graph.
 
 # Examples
 
-    julia> A = Signal(1) #source Signal
+    julia> A = Signal(1) # source Signal
     Signal
     value: 1
 
-    julia> B = 2 #non-Signal input
+    julia> B = 2 # non-Signal input
     2
 
-    julia>  C = Signal(A,B) do a,b #derived Signal
-                a+b
-            end
+    julia> C = Signal(A, B) do a, b # derived Signal
+               a + b
+           end
 
     Signal
     value: 3
@@ -79,7 +78,5 @@ Get the current value stored in `S` without pulling changes from the graph.
     julia> C[]
     102
 """ Signal
-
-
 
 end # module

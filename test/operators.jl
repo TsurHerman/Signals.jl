@@ -1,19 +1,18 @@
-
 @testset "drop_repeats" begin
     Signals.async_mode(false)
     A = Signal(1)
-    B = Signal(droprepeats(A);state = 0) do a,state
+    B = Signal(droprepeats(A); state = 0) do a, state
         state.x += 1
         a + 1
     end
-    C = Signal(B;state = 0) do b,state
+    C = Signal(B; state = 0) do b, state
         state.x += 1
         b + 1
     end
 
     @test B.state.x == 1
     @test C.state.x == 1
-    A(1);A(1);
+    A(1); A(1);
     @test B.state.x == 1
     @test C.state.x == 1
     A(3.14)
@@ -25,9 +24,9 @@ end
     Signals.async_mode(false)
     A = Signal(1)
     cond = Signal(A) do a
-        a<10
+        a < 10
     end
-    B = when(cond,A) do a
+    B = when(cond, A) do a
         a*2
     end
     A(5)
@@ -45,7 +44,7 @@ end
     Signals.async_mode(false)
     A = Signal(1)
     B = Signal(10)
-    C = sampleon(A,B)
+    C = sampleon(A, B)
 
     @test C[] == 10
     B(0)
@@ -62,7 +61,7 @@ end
 @testset "filter" begin
     Signals.async_mode(false)
     A = Signal(100000)
-    B = filter(x->x<10,1,A)
+    B = filter(x -> x<10, 1, A)
 
     @test B[] == 1
     A(100)
@@ -81,7 +80,7 @@ end
 @testset "foldp" begin
     Signals.async_mode(false)
     A = Signal(1)
-    B = foldp(+,0,A)
+    B = foldp(+, 0, A)
 
     A(2)
     A(3)
@@ -95,7 +94,7 @@ end
     Signals.async_mode(false)
     A = Signal(1)
     B = Signal(1)
-    C = merge(A,B)
+    C = merge(A, B)
 
     A(10)
     @test C[] == 10
@@ -108,7 +107,7 @@ end
     A = Signal(1)
     B = Signal(1)
     C = droprepeats(A)
-    D = merge(B,C)
+    D = merge(B, C)
 
     A(100)
     @test D[] == 100
@@ -122,8 +121,8 @@ end
     Signals.async_mode(true)
 
     A = Signal(1)
-    B = async_signal(x->x+1,A)
-    C = remote_signal(x->x+1,A)
+    B = async_signal(x -> x+1, A)
+    C = remote_signal(x -> x+1, A)
 
     A(10)
     sleep(2)

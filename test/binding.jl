@@ -4,15 +4,15 @@
     B = Signal(1)
     C = Signal(1)
 
-    bind!(A,B)
-    bind!(A,C)
+    bind!(A, B)
+    bind!(A, C)
 
     A(10)
     B(100)
 
     @test A() == 100
 
-    unbind!(A,B)
+    unbind!(A, B)
 
     A(10)
     B(100)
