@@ -49,7 +49,7 @@ function propogate!(s::Signal, async = async_mode())
     end
 end
 
-function pull_enqueue(s, async = async_mode())
+function pull_enqueue(s::Signal, async = async_mode())
     if async
         enqueue!(pull_queue, s)
     else
@@ -76,7 +76,7 @@ abstract type StandardPull <: PullType end
 function (pa::PullAction{StandardPull, ARGS})(s::Signal) where ARGS
     args = pull_args(pa)
     if !valid(s)
-        store!(s, pa())
+        store!(s,pa.f(args...))
     end
     value(s)
 end
