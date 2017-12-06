@@ -8,9 +8,9 @@ Reactive.async_mode.x = false
     Signals.async_mode(false)
     n = 200
     signals = Vector{Signal}()
-    push!(signals,Signal(1))
+    push!(signals,Signal(1;typed = true))
     for i=1:n
-        A = Signal(signals[i]) do x
+        A = Signal(signals[i];typed = true) do x
             x+1
         end
         push!(signals,A)
@@ -44,17 +44,17 @@ Reactive.async_mode.x = false
     println("")
 
     typ = SMatrix{4,4,Float64,16}
-    A = Signal(typ(rand(4,4)))
-    B = Signal(typ(rand(4,4)))
-    C = Signal(typ(rand(4,4)))
-    D = Signal(typ(rand(4,4)))
-    E = Signal(A,B) do a,b
+    A = Signal(typ(rand(4,4));typed = true)
+    B = Signal(typ(rand(4,4));typed = true)
+    C = Signal(typ(rand(4,4));typed = true)
+    D = Signal(typ(rand(4,4));typed = true)
+    E = Signal(A,B;typed = true) do a,b
         a*b
     end
-    F = Signal(C,D) do a,b
+    F = Signal(C,D;typed = true) do a,b
         a*b
     end
-    G = Signal(E,F) do e,f
+    G = Signal(E,F;typed = true) do e,f
         e*f
     end
     Z = typ(zeros(4,4))

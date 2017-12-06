@@ -1,14 +1,15 @@
-mutable struct SignalData
-    x
+mutable struct SignalData{T}
+    x::T
     valid::Bool
     propagated::Bool
 end
-SignalData(x) = SignalData(x,true,false)
-SignalData() = SignalData(nothing,false,false)
+SignalData(x) = SignalData{Any}(x,true,false)
+SignalData(T::Type,x) = SignalData{T}(x,true,false)
+SignalData() = SignalData{Any}(nothing,false,false)
 SignalData(::Void) = SignalData()
 
-struct Signal
-    data::SignalData
+struct Signal{T}
+    data::SignalData{T}
     action::PullAction
     children::Vector{Signal}
     binders::Vector{Signal}
@@ -16,15 +17,16 @@ struct Signal
     state::Ref
 end
 
-function store!(sd::SignalData,val)
+function store!(sd::SignalData{T},val::S) where T where S
      sd.propagated = false
      sd.valid = true;
-     sd.x = val
+     sd.x = convert(T,val)
  end
 store!(s::Signal,val) = store!(s.data,val)
 
 value(s::Signal) = value(s.data)
 value(sd::SignalData) = sd.x
+value(x) = x
 
 """Retrieve the internal state of a `Signal`"""
 state(s::Signal) = state(s.state)
@@ -45,12 +47,17 @@ Signal(val;kwargs...) = Signal(()->val;kwargs...)
 
 abstract type Stateless end
 function Signal(f::Function,args...;state = Stateless ,strict_push = false,
-                pull_type = StandardPull, v0 = nothing)
+                pull_type = StandardPull, v0 = nothing , typed = false)
     _state = Ref(state)
     if state != Stateless
         args = (args...,_state)
     end
-    sd = SignalData(v0)
+    if typed == false
+        sd = SignalData(v0)
+    else
+        v0 = f(pull!.(args)...)
+        sd = SignalData(typeof(v0),v0)
+    end
     action = PullAction(f,args,pull_type)
     s=Signal(sd,action,_state,strict_push)
     v0 == nothing && s()
@@ -114,6 +121,10 @@ function show(io::IO, ::MIME"text/plain", s::Signal)
     state_str = "\nstate{$(typeof(s.state.x))}: $(s.state.x)"
     state_str = state(s) == Signals.Stateless ? "" : state_str
     valid_str = valid(s) ? "" : "(invalidated)"
-    print_with_color(200,io,"Signal";bold = true)
+
+    print_with_color(200,io,signal_str(s);bold = true)
     print(io, "$valid_str $state_str \nvalue: ",s[])
 end
+
+signal_str(s::Signal{Any}) = "Signal"
+signal_str(s::Signal{T}) where T = "TypedSignal{$T}"

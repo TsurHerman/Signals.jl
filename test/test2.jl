@@ -72,3 +72,13 @@ B_strict.state.x == 1
 A_strict(10);A_strict(100);
 yield();
 B_strict.state.x == 111
+
+
+Signals.async_mode(false)
+A = fps(30;duration = 3)
+sleep(1)
+B = buffer(A; buf_size =  Inf, timespan = 0.49 , type_stable = true)
+sleep(2)
+typeof(B()) == Vector{typeof(A())}
+res = copy(B())
+abs(res[end] - res[1] - 0.5) < 0.15

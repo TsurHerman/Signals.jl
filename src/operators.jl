@@ -37,7 +37,7 @@ function filter(f::Function,v0,s::Signal)
     Signal(sd,action)
 end
 
-function (pa::PullAction{Filter,Tuple{Signal}})(s)
+function (pa::PullAction{Filter,Tuple{Signal{T}}})(s) where T
     source_val = pull!(pa.args[1])
     if !valid(s)
         if pa.f(source_val) == true

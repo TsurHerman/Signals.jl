@@ -13,9 +13,14 @@ pull_args(args) = map(args) do arg
     !(typeof(arg) <: Signal) ? arg : pull!(arg)
 end
 
+value_args(pa::PullAction) = pull_args(pa.args)
+value_args(args) = map(args) do arg
+    !(typeof(arg) <: Signal) ? arg : pull!(arg)
+end
+
 valid_args(args) = all(args) do arg
     !(typeof(arg) <: Signal) ? true : valid(arg)
 end
 valid(pa::PullAction) = valid_args(pa.args)
 
-(pa::PullAction)() = pa.f(pull_args(pa)...)
+(pa::PullAction)() = pa.f(value_args(pa)...)
