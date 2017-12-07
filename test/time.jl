@@ -1,4 +1,15 @@
 @testset "fps and every" begin
+    #warmup
+    A = fps(10; duration = 1)
+    pA = previous(A)
+    C = Signal(-, A, pA)
+    nupdates = count(C)
+    sum_updates = foldp(+, 0, C)
+    avg_delay = Signal(/, sum_updates, nupdates)
+    Signals.run_till_now()
+    switch = Signal(false)
+    A = fpswhen(switch, 10; duration = 1)
+
     #fps
     for tv in [true, false]
         Signals.async_mode(tv)
@@ -23,7 +34,7 @@
 
         #fpswhen
         switch = Signal(false)
-        A = fpswhen(switch, 10; duration = 1)
+        A = fpswhen(switch, 10; duration = 1.2)
         C = count(A)
         sleep(1)
         @test C() <= 1
@@ -81,6 +92,14 @@ end
 end
 
 @testset "buffer" begin
+    #warmup
+    A = fps(30; duration = 1)
+    B = buffer(A; buf_size = Inf, timespan = 0.5, type_stable = true)
+    sleep(1)
+    typeof(B()) == Vector{typeof(A())}
+    abs(B()[end] - B()[1] - 0.5) < 0.15
+    Signals.run_till_now()
+
     for tv in [true, false]
         Signals.async_mode(tv)
         A = Signal(2; strict_push = true)
