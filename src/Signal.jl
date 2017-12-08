@@ -128,3 +128,8 @@ end
 
 signal_str(s::Signal{Any}) = "Signal"
 signal_str(s::Signal{T}) where T = "TypedSignal{$T}"
+
+TypedSignal(val) = Signal(val;typed = true)
+TypedSignal(f::Function,args...) = Signal(f,args...;typed = true)
+export TypedSignal
+Base.map(f::Function,in::Signal,rest...) = Signal(f,in,rest...;typed = true)

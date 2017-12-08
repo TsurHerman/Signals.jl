@@ -1,14 +1,13 @@
-
 function isatom()
-    isdefined(Main,:Atom) &&
-        isdefined(Main,:Juno) &&
+    isdefined(Main, :Atom) &&
+        isdefined(Main, :Juno) &&
         Main.Juno._active == true
 end
 
-function handle_err(e,st)
+function handle_err(e, st)
     if isatom() && debug_mode() == false
         st = clean_stacktrace(st)
-        ee = Main.Atom.EvalError(e,st)
+        ee = Main.Atom.EvalError(e, st)
         display(ee)
         rethrow("Signal Exception")
     else
