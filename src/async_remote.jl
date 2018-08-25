@@ -1,3 +1,4 @@
+using Distributed
 @noinline call_no_inline(f,args) = f(args...)
 """
     s = async_signal(f, args...; init = nothing)
@@ -8,7 +9,7 @@ different task whenever its arguments update.async signals only work in a push b
 function async_signal(f, args...; init = nothing)
     res = Signal(init)
     Signal(args...) do args...
-        @schedule begin
+        @async begin
             try
                 res(call_no_inline(f, args))
             catch e
@@ -31,7 +32,7 @@ in a push based paradigm.
 function remote_signal(f, args...; init = nothing, procid = first(workers()))
     res = Signal(init)
     Signal(args...) do args...
-        @schedule begin
+        @async begin
              try
                  x = @fetchfrom procid call_no_inline(f, args)
                  res(x)

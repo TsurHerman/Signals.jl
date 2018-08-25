@@ -1,5 +1,7 @@
-Reactive
+julia 1.0
 BenchmarkTools
 StaticArrays
 Compat
 DataStructures
+Distributed
+Statistics

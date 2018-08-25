@@ -1,4 +1,4 @@
-@testset "fps and every" begin
+# @testset "fps and every" begin
     #warmup
     A = fps(10; duration = 1)
     pA = previous(A)
@@ -43,7 +43,7 @@
         sleep(1.5)
         @test C() >= 9 # relax test to pass appveyor build test
     end
-end
+# end
 
 @testset "throttle and debounce" begin
     for tv in [true, false]

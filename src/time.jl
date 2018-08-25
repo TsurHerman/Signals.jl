@@ -1,7 +1,7 @@
 """
     s = buffer(input; buf_size = Inf, timespan = 1, type_stable = false)
 
-Create a signal whos buffers updates to signal `input` until maximum size of `buf_size`
+Create a signal who buffers updates to signal `input` until maximum size of `buf_size`
 or until `timespan` seconds have passed. The signal value is the last full buffer emitted
 or an empty vector if the buffer have never been filled before.
 
@@ -34,7 +34,7 @@ have passed since the last time its `args` were updated. Only works in push base
 If `v0` is not specified then the initial value is `f(args...)`.
 """
 function debounce(f, args...; delay = 1, v0 = nothing)
-    timer = Timer(identity, 0)
+    timer = Timer(identity, 0;interval = 0)
     f_args = PullAction(f, args)
     debounced_signal = Signal(v0 == nothing ? f_args() : v0)
     Signal(args...) do args
@@ -78,7 +78,7 @@ end
 function activate_timer(s, dt, duration)
     signalref = WeakRef(Ref(s))
     start_time = time()
-    t = Timer(dt, dt) do t
+    t = Timer(dt;interval = dt) do t
         time_passed = time() - start_time
         if time_passed > duration || signalref.value == nothing
             finalize(t)
@@ -120,7 +120,7 @@ if and only if the value of `switch` is `true`.
 """
 function fpswhen(switch::Signal, freq; duration = Inf)
     res = Signal(time())
-    timer = Timer(0)
+    timer = Timer(0 ; interval = 0)
     Signal(droprepeats(switch)) do sw
         if sw == true
             timer = activate_timer(res, 1/freq, duration)
@@ -137,37 +137,39 @@ export fpswhen
 
 Create a `Signal` that updates to `f(i,args....) for i in range` every `1/fps` seconds.
 `range` and `args` can be of type `Signal` or any other type. The loop starts whenever
-one of the arguments or when `range` itself updates. If the previous for loop did not
+one of the arguments updates. If the previous for loop did not
 complete it gets cancelled.
 
-# Examples
+# Example
 
-    range = Signal(1:5)
+    rng = Signal(1:5)
     A = Signal(2)
-    for_signal(range,A;fps = 30) do i,a
+    B = for_signal(rng,A;fps = 30) do i,a
         println(a^i)
-    end
+    end;
 """
-function for_signal(f::Function, range, args...; fps = 1)
-    i_sig = Signal(first(pull!(range)))
-    timer = Timer(0)
+function for_signal(f::Function, rng, args...; fps = 1)
+    i_sig = Signal(first(pull!(rng)))
+    timer = Timer(0; interval = 0)
     Signal(args...; v0 = timer) do args
-        current_range = pull!(range)
+        current_range = pull!(rng)
         finalize(timer)
-        state = Ref(start(current_range))
-        (item, state.x) = next(current_range, state.x)
+        iteration = iterate(current_range)
+        (iteration == nothing) && return
+        (item, state) = iteration
         i_sig(item)
-        timer = Timer(1/fps, 1/fps) do t
-            if done(current_range, state.x)
+        timer = Timer(1/fps; interval = 1/fps) do t
+            iteration = iterate(current_range,state)
+            if iteration == nothing
                 finalize(t)
             else
-                (item, state.x) = next(current_range, state.x)
+                (item, state) = iteration
                 i_sig(item)
             end
             nothing
         end
     end
-    Signal(i_sig) do i
+    Signal(i_sig; v0 = nothing) do i
         f(i, pull_args(args)...)
     end
 end

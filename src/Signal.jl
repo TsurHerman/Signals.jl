@@ -5,7 +5,7 @@ mutable struct SignalData
 end
 SignalData(x) = SignalData(x, true, false)
 SignalData() = SignalData(nothing, false, false)
-SignalData(::Void) = SignalData()
+SignalData(::Nothing) = SignalData()
 
 struct Signal
     data::SignalData
@@ -57,9 +57,10 @@ function Signal(f::Function, args...; state = Stateless, strict_push = false,
 end
 
 function Signal(sd::SignalData, action::PullAction, state = Stateless, strict_push = false)
-    debug_mode() && finalizer(sd, x-> @schedule println("signal deleted"))
+    debug_mode() && finalizer(sd, x-> @async println("signal deleted"))
 
-    s = Signal(sd, action, Signal[], Signal[], strict_push, Ref(state))
+    !(typeof(state) <: Ref) && (state = Ref(state))
+    s = Signal(sd, action, Signal[], Signal[], strict_push, state)
     for arg in action.args
         isa(arg, Signal) && push!(arg.children, s)
     end
@@ -113,6 +114,7 @@ function show(io::IO, ::MIME"text/plain", s::Signal)
     state_str = "\nstate{$(typeof(s.state.x))}: $(s.state.x)"
     state_str = state(s) == Signals.Stateless ? "" : state_str
     valid_str = valid(s) ? "" : "(invalidated)"
-    print_with_color(200, io, "Signal"; bold = true)
-    print(io, "$valid_str $state_str \nvalue: ", s[])
+    printstyled(io, "Signal"; bold = true,color = 200)
+    val = s[] == nothing ? Nothing : s[]
+    print(io, "$valid_str $state_str \nvalue: ", val)
 end

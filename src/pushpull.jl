@@ -11,7 +11,7 @@ function push!(s::Signal, val, async = async_mode())
             soft_push!(s, val, async)
         end
     catch e
-        handle_err(e, catch_stacktrace())
+        handle_err(e, stacktrace(catch_backtrace()))
     end
 end
 

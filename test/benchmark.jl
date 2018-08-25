@@ -1,7 +1,6 @@
-import Reactive
 using BenchmarkTools
 using StaticArrays
-Reactive.async_mode.x = false
+using Statistics
 
 @testset "benchmark" begin
     println("")
@@ -23,23 +22,6 @@ Reactive.async_mode.x = false
     bench = @benchmark begin $A(1); end;
     ptime = median(bench).time
     println("Signals function call overhead on push = $(ptime/n)ns") == nothing
-
-    signals = Vector{Reactive.Signal}()
-    push!(signals, Reactive.Signal(1))
-    for i = 1:n
-        A = Reactive.foreach(signals[i]) do x
-            x + 1
-        end
-        push!(signals, A)
-    end
-    A = signals[1]
-    sleep(2)
-
-    bench = @benchmark Reactive.push!($A, Reactive.value($A))
-    rtime = median(bench).time
-
-    println("Reactive function call overhead = $(rtime/n)ns") == nothing
-    # @test ptime < rtime
 
     println("")
 
@@ -64,28 +46,6 @@ Reactive.async_mode.x = false
     bench = @benchmark begin $A($Z); end
     ptime = median(bench).time
     println("Signals function call time on push (4x4 SArray multiply) = $(ptime/2)ns") == nothing
-
-    A = Reactive.Signal(typ(rand(4, 4)))
-    B = Reactive.Signal(typ(rand(4, 4)))
-    C = Reactive.Signal(typ(rand(4, 4)))
-    D = Reactive.Signal(typ(rand(4, 4)))
-    E = Reactive.foreach(A, B) do a, b
-        a*b
-    end
-    F = Reactive.foreach(C, D) do a, b
-        a*b
-    end
-    G = Reactive.foreach(E, F) do e, f
-        e*f
-    end
-    Z = typ(zeros(4, 4))
-    Reactive.async_mode.x = false
-
-    bench = @benchmark Reactive.push!($A, Reactive.value($A))
-    rtime = median(bench).time
-    println("Reactive function call time on push (4x4 SArray multiply) = $(rtime/2)ns") == nothing
-    # @test ptime < rtime
-
     println("")
 
     typ = Matrix
@@ -110,23 +70,6 @@ Reactive.async_mode.x = false
     ptime = median(bench).time
     println("Signals function call time on push (4x4 Matrix) = $(ptime/2)ns") == nothing
 
-    A = Reactive.Signal(typ(rand(4, 4)))
-    B = Reactive.Signal(typ(rand(4, 4)))
-    C = Reactive.Signal(typ(rand(4, 4)))
-    D = Reactive.Signal(typ(rand(4, 4)))
-    E = Reactive.foreach(A, B) do a, b
-        a*b
-    end
-    F = Reactive.foreach(C, D) do a, b
-        a*b
-    end
-    G = Reactive.foreach(E, F) do e, f
-        e*f
-    end
-    Z = typ(zeros(4, 4))
-    bench = @benchmark Reactive.push!($A, Reactive.value($A))
-    rtime = median(bench).time
-    println("Reactive function call time on push (4x4 Matrix) = $(rtime/2)ns") == nothing
     # @test ptime < rtime
 
 end

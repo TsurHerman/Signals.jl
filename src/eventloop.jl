@@ -1,7 +1,7 @@
 using DataStructures
 world_age() = ccall(:jl_get_world_counter, Int, ())
-const global pull_queue = Queue(Signal)
-const global push_queue = Queue(Tuple{Signal, Any})
+const global pull_queue = Queue{Signal}()
+const global push_queue = Queue{Tuple{Signal, Any}}()
 const global eventloop_cond = Condition()
 
 function empty_queues()
@@ -10,7 +10,7 @@ function empty_queues()
 end
 
 function __init__()
-    @schedule eventloop()
+    @async eventloop()
 end
 
 function run_till_now()
@@ -30,7 +30,7 @@ function eventloop(eventloop_world_age = world_age())
             if !isempty(pull_queue)
                 if world_age() > eventloop_world_age
                     debug_mode() && println("restarting Signals eventloop")
-                    @schedule eventloop()
+                    @async eventloop()
                     break
                 end
                 debug_mode() && println("pull-queue length: $(length(pull_queue))")
@@ -41,7 +41,7 @@ function eventloop(eventloop_world_age = world_age())
     catch e
         st = catch_stacktrace()
         empty_queues()
-        @schedule eventloop()
+        @async eventloop()
         return handle_err(e, st)
     end
 end

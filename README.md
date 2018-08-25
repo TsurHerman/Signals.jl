@@ -5,11 +5,6 @@
 Signals provides a multi-paradigm fast functional reactive programing for julia.
 It supports both pull and push operations and async(default) and non-async modes.
 
-It was largely influenced from [Reactive](https://github.com/JuliaGizmos/Reactive.jl), but takes a different approach on some key factors.
-
-For a quick introduction into reactive programming and signals using julia , see:
-[Reactive tutorial](http://juliagizmos.github.io/Reactive.jl/)
-
 ## Signal Creation
 ```julia
 S = Signal(val;strict_push = false)
@@ -135,4 +130,4 @@ julia> B()
 
 ## Fast
 Signals package was rigorously optimized for speed of execution
-and minimal recalculation of signal graph updates, it achieves around `2x`-`4x` speedup over the current state of the art functional reactive programming for julia
+and minimal recalculation of signal graph updates.

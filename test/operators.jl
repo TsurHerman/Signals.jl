@@ -1,3 +1,4 @@
+using Distributed
 @testset "drop_repeats" begin
     Signals.async_mode(false)
     A = Signal(1)

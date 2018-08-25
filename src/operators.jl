@@ -192,7 +192,7 @@ function recursion_free(f::Function, args...)
     for arg in args
         if typeof(arg) <: Signal
             #move to the top of the food chain
-            unshift!(arg.children, pop!(arg.children))
+            pushfirst!(arg.children, pop!(arg.children))
         end
     end
 end
