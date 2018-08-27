@@ -8,7 +8,6 @@ or an empty vector if the buffer have never been filled before.
 Buffer type will be `Any` unless `type_stable` is set to `true`, then it will be set
 to the value of the first encountered item.
 """
-
 function buffer(input; buf_size = Inf, timespan = 1, type_stable = false)
     _buf = type_stable ? typeof(input())[] : Any[]
     sbuf = foldp(push!, _buf, input)
