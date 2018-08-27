@@ -19,7 +19,7 @@ Remove all bindings that were previously created using `bind` that will cause `d
 """
 function unbind!(dst::Signal, src::Signal)
     b_idx = findfirst(b -> b.action.args[1] == src, dst.binders)
-    b_idx == 0 && return
+    b_idx === 0 && return
     binder = dst.binders[b_idx]
     detach(binder)
     filter!(dst.binders) do b

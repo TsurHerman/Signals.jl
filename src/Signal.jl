@@ -52,7 +52,7 @@ function Signal(f::Function, args...; state = Stateless, strict_push = false,
     sd = SignalData(v0)
     action = PullAction(f, args, pull_type)
     s=Signal(sd, action, _state, strict_push)
-    v0 == nothing && s()
+    v0 === nothing && s()
     s
 end
 
@@ -112,9 +112,9 @@ show(io::IO, s::Signal) = show(io, MIME"text/plain"(), s)
 
 function show(io::IO, ::MIME"text/plain", s::Signal)
     state_str = "\nstate{$(typeof(s.state.x))}: $(s.state.x)"
-    state_str = state(s) == Signals.Stateless ? "" : state_str
+    state_str = state(s) === Signals.Stateless ? "" : state_str
     valid_str = valid(s) ? "" : "(invalidated)"
     printstyled(io, "Signal"; bold = true,color = 200)
-    val = s[] == nothing ? Nothing : s[]
+    val = s[] === nothing ? Nothing : s[]
     print(io, "$valid_str $state_str \nvalue: ", val)
 end

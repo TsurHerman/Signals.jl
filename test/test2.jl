@@ -27,6 +27,11 @@ A(Z)
 
 @benchmark begin begin $A[] = $A[];end; $G(); end
 
+
+Signals.debug_mode(true)
+
+A("ff")
+
 addprocs(1)
 @everywhere using Signals
 Signals.async_mode(true)

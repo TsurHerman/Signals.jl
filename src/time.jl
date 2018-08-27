@@ -36,7 +36,7 @@ If `v0` is not specified then the initial value is `f(args...)`.
 function debounce(f, args...; delay = 1, v0 = nothing)
     timer = Timer(identity, 0;interval = 0)
     f_args = PullAction(f, args)
-    debounced_signal = Signal(v0 == nothing ? f_args() : v0)
+    debounced_signal = Signal(v0 === nothing ? f_args() : v0)
     Signal(args...) do args
         finalize(timer)
         timer = Timer(t -> debounced_signal(f_args()), delay)
@@ -80,7 +80,7 @@ function activate_timer(s, dt, duration)
     start_time = time()
     t = Timer(dt;interval = dt) do t
         time_passed = time() - start_time
-        if time_passed > duration || signalref.value == nothing
+        if time_passed > duration || signalref.value === nothing
             finalize(t)
         else
             push!(signalref.value.x, time(), true)
@@ -122,7 +122,7 @@ function fpswhen(switch::Signal, freq; duration = Inf)
     res = Signal(time())
     timer = Timer(0 ; interval = 0)
     Signal(droprepeats(switch)) do sw
-        if sw == true
+        if sw === true
             timer = activate_timer(res, 1/freq, duration)
         else
             finalize(timer)
@@ -155,12 +155,12 @@ function for_signal(f::Function, rng, args...; fps = 1)
         current_range = pull!(rng)
         finalize(timer)
         iteration = iterate(current_range)
-        (iteration == nothing) && return
+        (iteration === nothing) && return
         (item, state) = iteration
         i_sig(item)
         timer = Timer(1/fps; interval = 1/fps) do t
             iteration = iterate(current_range,state)
-            if iteration == nothing
+            if iteration === nothing
                 finalize(t)
             else
                 (item, state) = iteration

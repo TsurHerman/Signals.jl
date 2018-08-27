@@ -40,7 +40,7 @@ end
 function (pa::PullAction{Filter, Tuple{Signal}})(s)
     source_val = pull!(pa.args[1])
     if !valid(s)
-        if pa.f(source_val) == true
+        if pa.f(source_val) === true
             store!(s, source_val)
         else
             validate(s)
