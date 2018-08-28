@@ -86,7 +86,7 @@ function (pa::PullAction{When, A})(s) where A
     condition = state(s)
     args = pull_args(pa)
     if !valid(s)
-        if condition() == true
+        if condition() === true
             store!(s, pa.f(args...))
         else
             validate(s)
