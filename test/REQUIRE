@@ -3,3 +3,4 @@ BenchmarkTools
 StaticArrays
 DataStructures
 Compat
+Reactive
