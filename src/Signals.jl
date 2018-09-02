@@ -20,6 +20,7 @@ include("operators.jl")
 include("bind.jl")
 include("async_remote.jl")
 include("time.jl")
+include("TypedSignal.jl")
 
 @doc """
     S = Signal(val; strict_push = false)

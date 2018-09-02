@@ -1,4 +1,6 @@
 using Signals
+using StaticArrays
+using BenchmarkTools
 Signals.async_mode(false)
 # write your own tests here
 # @test 1
@@ -77,3 +79,20 @@ B_strict.state.x == 1
 A_strict(10);A_strict(100);
 yield();
 B_strict.state.x == 111
+
+
+
+
+A = 5
+f() = begin
+    global A
+    while true
+        if A == 6
+            break;
+        end
+        sleep(0.001)
+    end
+end
+
+B = @async f()
+A = 6

@@ -1,9 +1,9 @@
 
 ### push!
 
-(s::Signal)(val) = push!(s, val)
+(s::Signal)((@nospecialize val)) = push!(s, val)
 import Base.push!
-function push!(s::Signal, val, async = async_mode())
+function push!(s::Signal,(@nospecialize val), async::Bool = async_mode())
     try
         if s.strict_push
             strict_push!(s, val, async)
@@ -21,7 +21,7 @@ end
 Set `s` to `val` and propagate into derived signals, is `async` is `true`(default)
 then updates to derived signals will occur asynchronically.
 """
-function strict_push!(s, val, async = async_mode())
+function strict_push!(s, (@nospecialize val), async = async_mode())
     if !async || isempty(pull_queue)
         soft_push!(s, val, async)
     else
@@ -32,14 +32,14 @@ function strict_push!(s, val, async = async_mode())
 end
 export strict_push!
 
-function soft_push!(s, val, async = async_mode())
+function soft_push!(s,(@nospecialize val), async = async_mode())
     set_value!(s, val)
     propogate!(s, async)
     async && notify(eventloop_cond)
     val
 end
 
-function propogate!(s::Signal, async = async_mode())
+function propogate!(s::Signal, async::Bool = async_mode())
     propagated(s) && return
     propagated(s, true)
     if isempty(s.children)
@@ -49,7 +49,7 @@ function propogate!(s::Signal, async = async_mode())
     end
 end
 
-function pull_enqueue(s::Signal, async = async_mode())
+function pull_enqueue(s::Signal, async::Bool = async_mode())
     if async
         enqueue!(pull_queue, s)
     else
@@ -68,7 +68,7 @@ function pull!(s::Signal)
     end
     return value(s)
 end
-pull!(x) = x
+pull!(@nospecialize x) = x
 
 action(s::Signal) = s.action(s)
 

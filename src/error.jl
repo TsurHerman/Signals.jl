@@ -4,7 +4,7 @@ struct SignalException <: Exception
     st
 end
 
-Base.showerror(io::IO, ex::SignalException, bt; backtrace=true) = begin
+Base.showerror(io::IO, ex::SignalException, bt = nothing; backtrace=true) = begin
     st = ex.st
     !debug_mode() && (st = clean_stacktrace(st))
     fmt_st = [(st[i],i) for i=1:length(st)]

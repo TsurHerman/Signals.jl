@@ -9,7 +9,7 @@ PullAction(f, args, pt = StandardPull) = PullAction{pt, typeof(args)}(f, args)
 
 pull_args(pa::PullAction) = pull_args(pa.args)
 pull_args(args) = map(args) do arg
-    !(typeof(arg) <: Signal) ? arg : pull!(arg)
+    pull!(arg)
 end
 
 valid_args(args) = all(args) do arg

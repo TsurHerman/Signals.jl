@@ -4,6 +4,7 @@ const global pull_queue = Queue{Signal}()
 const global push_queue = Queue{Tuple{Signal, Any}}()
 const global eventloop_cond = Condition()
 
+
 function empty_queues()
     empty!(pull_queue.store)
     empty!(push_queue.store)
@@ -12,6 +13,7 @@ end
 function __init__()
     @async eventloop()
 end
+
 
 function run_till_now()
     while !isempty(pull_queue)
@@ -39,9 +41,9 @@ function eventloop(eventloop_world_age = world_age())
             wait(eventloop_cond)
         end
     catch e
-        st = catch_stacktrace()
+        st = stacktrace(catch_backtrace())
         empty_queues()
         @async eventloop()
-        return handle_err(e, st)
+        showerror(stderr, SignalException(e,st))
     end
 end

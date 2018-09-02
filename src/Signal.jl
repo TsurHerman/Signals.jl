@@ -16,6 +16,10 @@ struct Signal
     state::Ref
 end
 
+add_child!(arg_signal::Signal,s::Signal) = push!(arg_signal.children,s)
+add_child!(arg_signal,s) = nothing
+
+
 function store!(sd::SignalData, val)
      sd.propagated = false
      sd.valid = true;
@@ -62,7 +66,8 @@ function Signal(sd::SignalData, action::PullAction, state = Stateless, strict_pu
     !(typeof(state) <: Ref) && (state = Ref(state))
     s = Signal(sd, action, Signal[], Signal[], strict_push, state)
     for arg in action.args
-        isa(arg, Signal) && push!(arg.children, s)
+        add_child!(arg,s)
+        # isa(arg, Signal) && push!(arg.children, s)
     end
     s
 end
