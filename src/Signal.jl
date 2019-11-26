@@ -61,7 +61,10 @@ function Signal(f::Function, args...; state = Stateless, strict_push = false,
 end
 
 function Signal(sd::SignalData, action::PullAction, state = Stateless, strict_push = false)
-    debug_mode() && finalizer(x-> @async println("signal deleted"), sd)
+    if debug_mode()
+        f(x) = @async println("signal deleted")
+        finalizer(f, sd)
+    end
 
     !(typeof(state) <: Ref) && (state = Ref(state))
     s = Signal(sd, action, Signal[], Signal[], strict_push, state)
