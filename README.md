@@ -76,7 +76,7 @@ Signals supports several reactive operators
  * `sampleon`
  * `foldp`
  * `count`
- * `prev`
+ * `previous`
  * `merge`
  * `async_signal`
  * `remote_signal`
