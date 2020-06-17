@@ -1,14 +1,14 @@
 name = "Signals"
 uuid = "6303bc30-01ab-52eb-8b10-60e47555a8d1"
 authors = ["Tsur Herman <tsur@augmedics.com>"]
-version = "1.2.0"
+version = "1.2.1"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [compat]
-julia = "1.2"
+julia = "1"
 
 # [extras]
 # BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
