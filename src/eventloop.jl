@@ -32,7 +32,7 @@ function eventloop(eventloop_world_age = world_age())
             if !isempty(pull_queue)
                 if world_age() > eventloop_world_age
                     debug_mode() && println("restarting Signals eventloop")
-                    @async eventloop()
+                    @async Base.invokelatest(eventloop)
                     break
                 end
                 debug_mode() && println("pull-queue length: $(length(pull_queue))")
@@ -43,7 +43,7 @@ function eventloop(eventloop_world_age = world_age())
     catch e
         st = stacktrace(catch_backtrace())
         empty_queues()
-        @async eventloop()
+        @async Base.invokelatest(eventloop)
         showerror(stderr, SignalException(e,st))
     end
 end
