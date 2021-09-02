@@ -12,6 +12,7 @@
 
     #fps
     for tv in [true, false]
+        global A,pA,C,nupdates,sum_updates,avg_delay,switch
         Signals.async_mode(tv)
         A = fps(10; duration = 1)
         pA = previous(A)
