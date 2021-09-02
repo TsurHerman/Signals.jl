@@ -1,7 +1,7 @@
 name = "Signals"
 uuid = "6303bc30-01ab-52eb-8b10-60e47555a8d1"
 authors = ["Tsur Herman <tsur@augmedics.com>"]
-version = "1.2.2"
+version = "1.2.3"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
@@ -9,14 +9,3 @@ Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [compat]
 julia = "1"
-
-# [extras]
-# BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
-# Reactive = "a223df75-4e93-5b7c-acf9-bdd599c0f4de"
-# StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
-# Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-# Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
-
-#
-# [targets]
-# test = ["Test", "Reactive", "BenchmarkTools", "StaticArrays" , "Statistics"]
