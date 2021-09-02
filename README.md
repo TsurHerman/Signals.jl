@@ -1,6 +1,9 @@
 # Signals
 
-[![Build Status](https://travis-ci.org/TsurHerman/Signals.jl.svg?branch=master)](https://travis-ci.org/TsurHerman/Signals.jl)[![codecov.io](http://codecov.io/github/TsurHerman/Signals.jl/coverage.svg?branch=master)
+[![Build Status](https://github.com/TsurHerman/Signals.jl/workflows/CI/badge.svg)](https://github.com/TsurHerman/Signals.jl/actions/workflows/CI.yml?query=branch%3Amaster)
+[![coveralls](https://coveralls.io/repos/github/TsurHerman/Signals.jl/badge.svg?branch=master)](https://coveralls.io/github/TsurHerman/Signals.jl?branch=master)
+[![codecov.io](https://codecov.io/gh/TsurHerman/Signals.jl/branch/master/graph/badge.svg?label=codecov&token=)](https://codecov.io/gh/TsurHerman/Signals.jl)
+
 
 Signals provides a multi-paradigm fast functional reactive programing for julia.
 It supports both pull and push operations and async(default) and non-async modes.
